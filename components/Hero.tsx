@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import AskSavaDemo from "./AskSavaDemo";
 
 export default function Hero() {
+  const [demoKey, setDemoKey] = useState(0);
+
   return (
     <main className="relative z-10 mx-auto flex h-full w-full flex-col px-4 py-4 sm:px-8 sm:py-6">
       <header className="mb-4 flex shrink-0 items-center justify-center sm:mb-6">
@@ -17,9 +20,12 @@ export default function Hero() {
         />
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-x-hidden">
-        <div className="hero-card w-full min-w-0 max-w-[560px]">
-          <AskSavaDemo />
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-x-hidden overflow-y-auto pb-16">
+        <div className="hero-card w-full min-w-0 max-w-[560px] py-2">
+          <AskSavaDemo
+            key={demoKey}
+            onRequestReload={() => setDemoKey((k) => k + 1)}
+          />
         </div>
       </div>
     </main>
