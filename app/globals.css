@@ -38,6 +38,10 @@ body {
   min-height: 100%;
   overflow: hidden;
 }
+*::selection{
+  background: #000000 !important;
+  color: #fff;
+}
 
 /* Hide scrollbars globally while keeping scroll where needed */
 * {
@@ -56,15 +60,12 @@ body {
   color: var(--cream);
 }
 
-@keyframes status-pulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
+@keyframes status-spin {
+  from {
+    transform: rotate(0deg);
   }
-  50% {
-    opacity: 0.45;
-    transform: scale(0.85);
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -85,8 +86,7 @@ body {
 .dynamic-island {
   cursor: pointer;
   animation: island-breathe 3.2s ease-in-out 1.4s infinite;
-  will-change: width, height, transform;
-  transform-origin: center center;
+  will-change: width, height;
 }
 
 .dynamic-island-btn {
@@ -128,18 +128,10 @@ body {
 
 .ask-sava-card .status-sparkle,
 .status-sparkle {
-  animation: status-pulse 1.6s ease-in-out infinite;
+  animation: status-spin 1.1s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  @keyframes status-pulse {
-    0%,
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
   .ask-sava-card .status-sparkle,
   .status-sparkle {
     animation: none;

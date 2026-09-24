@@ -20,7 +20,6 @@ export default function DynamicIsland({
   const shellRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const playedIntroRef = useRef(false);
-  const hoverTweenRef = useRef<gsap.core.Timeline | null>(null);
 
   useGSAP(
     () => {
@@ -31,28 +30,32 @@ export default function DynamicIsland({
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       gsap.set(content, { visibility: "visible", opacity: 0, y: 0 });
-      const toW = Math.ceil(content.scrollWidth + 7);
-      const toH = Math.ceil(Math.max(content.scrollHeight + 3, 26));
+      const toW = Math.ceil(content.scrollWidth);
+      const toH = Math.ceil(content.scrollHeight);
+
+      const settleAuto = () => {
+        gsap.set(shell, { width: "auto", height: "auto", clearProps: "scale,y" });
+      };
 
       if (reduced) {
-        gsap.set(shell, {
-          width: toW,
-          height: toH,
-          opacity: 1,
-          clearProps: "scale,y,scaleX,scaleY,rotate",
-        });
+        gsap.set(shell, { opacity: 1 });
         gsap.set(content, { opacity: 1 });
+        settleAuto();
         playedIntroRef.current = true;
         return;
       }
 
       if (playedIntroRef.current) {
         gsap.set(content, { opacity: 1 });
+        const fromW = shell.offsetWidth;
+        const fromH = shell.offsetHeight;
+        gsap.set(shell, { width: fromW, height: fromH });
         gsap.to(shell, {
           width: toW,
           height: toH,
-          duration: 0.45,
+          duration: 0.4,
           ease: "power3.inOut",
+          onComplete: settleAuto,
         });
         return;
       }
@@ -69,6 +72,7 @@ export default function DynamicIsland({
       const tl = gsap.timeline({
         onComplete: () => {
           playedIntroRef.current = true;
+          settleAuto();
         },
       });
 
@@ -98,88 +102,15 @@ export default function DynamicIsland({
 
       return () => {
         tl.kill();
-        hoverTweenRef.current?.kill();
       };
     },
     { dependencies: [showSkip] },
   );
 
-  const playHoverIn = () => {
-    const shell = shellRef.current;
-    if (!shell || !playedIntroRef.current) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    hoverTweenRef.current?.kill();
-    hoverTweenRef.current = gsap
-      .timeline()
-      .to(shell, {
-        scaleX: 1.12,
-        scaleY: 0.88,
-        rotate: -2,
-        duration: 0.16,
-        ease: "power2.out",
-      })
-      .to(shell, {
-        scaleX: 0.94,
-        scaleY: 1.1,
-        rotate: 2,
-        duration: 0.18,
-        ease: "power2.inOut",
-      })
-      .to(shell, {
-        scaleX: 1.06,
-        scaleY: 1.06,
-        rotate: 0,
-        duration: 0.45,
-        ease: "elastic.out(1, 0.45)",
-      });
-  };
-
-  const playHoverOut = () => {
-    const shell = shellRef.current;
-    if (!shell) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    hoverTweenRef.current?.kill();
-    hoverTweenRef.current = gsap
-      .timeline()
-      .to(shell, {
-        scaleX: 1.08,
-        scaleY: 0.92,
-        duration: 0.12,
-        ease: "power2.in",
-      })
-      .to(shell, {
-        scaleX: 1,
-        scaleY: 1,
-        rotate: 0,
-        duration: 0.5,
-        ease: "elastic.out(1, 0.5)",
-      });
-  };
-
-  const playPress = () => {
-    const shell = shellRef.current;
-    if (!shell || !playedIntroRef.current) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    hoverTweenRef.current?.kill();
-    gsap.to(shell, {
-      scaleX: 0.92,
-      scaleY: 0.92,
-      duration: 0.12,
-      ease: "power2.in",
-    });
-  };
-
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-3 z-50 flex justify-center px-4 sm:bottom-5">
       <div
         ref={shellRef}
-        onMouseEnter={playHoverIn}
-        onMouseLeave={playHoverOut}
-        onMouseDown={playPress}
-        onMouseUp={playHoverIn}
         className="dynamic-island pointer-events-auto cursor-pointer overflow-hidden rounded-full border border-white/10 bg-[#141414]/92 shadow-[0_6px_24px_rgba(0,0,0,0.28)] backdrop-blur-xl"
         role="toolbar"
         aria-label="Demo controls"
@@ -229,7 +160,7 @@ export default function DynamicIsland({
               viewBox="0 0 24 24"
               fill="none"
               aria-hidden="true"
-              className="transition-transform duration-300 group-hover:rotate-[-40deg]"
+              className="shrink-0 transition-transform duration-300 group-hover:rotate-[-40deg]"
             >
               <path
                 d="M3.5 12a8.5 8.5 0 0 1 14.6-5.9L21 9"

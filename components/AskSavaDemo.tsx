@@ -19,7 +19,8 @@ const USER_CONFIRM = "Yes, build it for me.";
 
 const BUILDING_LABEL = "Building savaclub.co";
 const WAITLIST_LINE =
-  "Coming soon. Join the waitlist and be the first to get Sava.";
+  "Join the waitlist to be the first to know when we launch.";
+const SUCCESS_MESSAGE = "You’re on the list — we’ll be in touch.";
 
 function SparkleIcon() {
   return (
@@ -29,6 +30,27 @@ function SparkleIcon() {
         stroke="#E85A3C"
         strokeWidth="1.9"
         strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function DoubleTickIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M2.5 12.5 6 16l7.5-8"
+        stroke="#FD7A35"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8.5 12.5 12 16l9-10"
+        stroke="#FD7A35"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -50,8 +72,10 @@ export default function AskSavaDemo({
   const handRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const waitlistRef = useRef<HTMLDivElement>(null);
+  const waitlistFormRef = useRef<HTMLDivElement>(null);
   const buildingRef = useRef<HTMLDivElement>(null);
   const waitlistCtaRef = useRef<HTMLDivElement>(null);
+  const successRef = useRef<HTMLDivElement>(null);
 
   const user1Ref = useRef<HTMLDivElement>(null);
   const user1TextRef = useRef<HTMLSpanElement>(null);
@@ -71,8 +95,104 @@ export default function AskSavaDemo({
   const skipHandlerRef = useRef<() => void>(() => {});
   const atWaitlistRef = useRef(false);
 
+  const playJoinedSuccess = () => {
+    const card = cardRef.current;
+    const form = waitlistFormRef.current;
+    const success = successRef.current;
+    if (!card || !form || !success) {
+      setJoined(true);
+      return;
+    }
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      gsap.set(form, { display: "none", opacity: 0 });
+      gsap.set(success, { display: "flex", opacity: 1 });
+      gsap.set(card, {
+        width: "fit-content",
+        height: "auto",
+        marginLeft: "auto",
+        marginRight: "auto",
+        paddingTop: 6,
+        paddingBottom: 6,
+        paddingLeft: 10,
+        paddingRight: 10,
+      });
+      setJoined(true);
+      return;
+    }
+
+    const fromW = card.offsetWidth;
+    const fromH = card.offsetHeight;
+    gsap.set(card, {
+      width: fromW,
+      height: fromH,
+      overflow: "hidden",
+    });
+
+    gsap
+      .timeline({
+        onComplete: () => setJoined(true),
+      })
+      .to(form, { opacity: 0, duration: 0.4, ease: "power2.inOut" })
+      .add(() => {
+        gsap.set(form, { display: "none" });
+        gsap.set(success, { display: "flex", opacity: 0, scale: 0.92 });
+        gsap.set(card, {
+          width: "fit-content",
+          height: "auto",
+          marginLeft: "auto",
+          marginRight: "auto",
+          paddingTop: window.matchMedia("(max-width: 639px)").matches ? 6 : 8,
+          paddingBottom: window.matchMedia("(max-width: 639px)").matches ? 6 : 8,
+          paddingLeft: window.matchMedia("(max-width: 639px)").matches ? 10 : 12,
+          paddingRight: window.matchMedia("(max-width: 639px)").matches ? 10 : 12,
+        });
+        const toW = Math.ceil(card.offsetWidth);
+        const toH = Math.ceil(card.offsetHeight);
+        gsap.set(card, { width: fromW, height: fromH });
+        card.dataset.toW = String(toW);
+        card.dataset.toH = String(toH);
+        card.dataset.padT = String(
+          window.matchMedia("(max-width: 639px)").matches ? 6 : 8,
+        );
+        card.dataset.padB = card.dataset.padT;
+        card.dataset.padX = String(
+          window.matchMedia("(max-width: 639px)").matches ? 10 : 12,
+        );
+      })
+      .to(card, {
+        width: () => Number(card.dataset.toW),
+        height: () => Number(card.dataset.toH),
+        paddingTop: () => Number(card.dataset.padT),
+        paddingBottom: () => Number(card.dataset.padB),
+        paddingLeft: () => Number(card.dataset.padX),
+        paddingRight: () => Number(card.dataset.padX),
+        duration: 0.7,
+        ease: "power2.inOut",
+        onComplete: () => {
+          gsap.set(card, {
+            width: "fit-content",
+            height: "auto",
+            overflow: "visible",
+          });
+          delete card.dataset.toW;
+          delete card.dataset.toH;
+          delete card.dataset.padT;
+          delete card.dataset.padB;
+          delete card.dataset.padX;
+        },
+      })
+      .to(
+        success,
+        { opacity: 1, scale: 1, duration: 0.45, ease: "power2.out" },
+        "-=0.35",
+      );
+  };
+
   const onWaitlistSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (joined || waitlistLoading) return;
     const form = e.currentTarget;
     const email = new FormData(form).get("email");
     if (typeof email !== "string" || !email.trim()) return;
@@ -90,7 +210,7 @@ export default function AskSavaDemo({
         setWaitlistError(data.error || "Something went wrong. Try again.");
         return;
       }
-      setJoined(true);
+      playJoinedSuccess();
     } catch {
       setWaitlistError("Something went wrong. Try again.");
     } finally {
@@ -176,10 +296,16 @@ export default function AskSavaDemo({
         gsap.set(composer, { display: "none", opacity: 0 });
         gsap.set(waitlist, { display: "flex", opacity: 1 });
         gsap.set([building, waitlistCta], { opacity: 1, y: 0 });
+        if (waitlistFormRef.current) {
+          gsap.set(waitlistFormRef.current, { display: "flex", opacity: 1 });
+        }
+        if (successRef.current) {
+          gsap.set(successRef.current, { display: "none", opacity: 0 });
+        }
         gsap.set(card, {
           height: "auto",
           overflow: "visible",
-          clearProps: "width,minWidth,minHeight,padding,borderRadius",
+          clearProps: "width,minWidth,minHeight,padding,borderRadius,margin",
         });
         card.removeAttribute("aria-hidden");
         atWaitlistRef.current = true;
@@ -195,7 +321,7 @@ export default function AskSavaDemo({
       atWaitlistRef.current = false;
       setShowSkip(true);
 
-      textEl.textContent = "";
+      textEl.textContent = PLACEHOLDER;
       textEl.style.color = "#6b7280";
       gsap.set(textEl, { opacity: 1 });
       gsap.set(cursor, { opacity: 0 });
@@ -203,6 +329,12 @@ export default function AskSavaDemo({
       gsap.set(waitlist, { display: "none", opacity: 0 });
       gsap.set(building, { opacity: 0, y: 10 });
       gsap.set(waitlistCta, { opacity: 0, y: 10 });
+      if (waitlistFormRef.current) {
+        gsap.set(waitlistFormRef.current, { display: "flex", opacity: 1 });
+      }
+      if (successRef.current) {
+        gsap.set(successRef.current, { display: "none", opacity: 0 });
+      }
       gsap.set(thread, { opacity: 1, display: "flex", marginBottom: 0 });
       gsap.set(composer, { opacity: 1, display: "block" });
       gsap.set([user1, ai1, ai2, user2], { display: "none", opacity: 0 });
@@ -217,7 +349,6 @@ export default function AskSavaDemo({
       };
 
       const tl = gsap.timeline();
-      const placeholderState = { i: 0 };
       const typeState = { i: 0 };
       const aiState = { i: 0 };
       const questionState = { i: 0 };
@@ -376,21 +507,11 @@ export default function AskSavaDemo({
         { opacity: 0, y: 16 },
         { opacity: 1, y: 0, duration: 0.75, ease: "power2.out" },
       )
-        .add(() => {
-          startComposerCursorBlink();
-        })
-        .to(placeholderState, {
-          i: PLACEHOLDER.length,
-          duration: PLACEHOLDER.length * 0.028,
-          ease: "none",
-          onUpdate: () => {
-            textEl.textContent = PLACEHOLDER.slice(0, Math.round(placeholderState.i));
-          },
-        })
         .to({}, { duration: 0.55 })
         .add(() => {
           clearComposerForTyping();
           setSendActive(true);
+          startComposerCursorBlink();
         })
         .to(typeState, {
           i: TYPED_MESSAGE.length,
@@ -610,7 +731,9 @@ export default function AskSavaDemo({
             ref={messageRef}
             className="mb-2.5 min-h-[1.4em] break-words text-[13px] leading-relaxed sm:mb-3 sm:text-[16px]"
           >
-            <span ref={textRef} className="text-[#6b7280]" />
+            <span ref={textRef} className="text-[#6b7280]">
+              {PLACEHOLDER}
+            </span>
             <span
               ref={cursorRef}
               className="ml-0.5 inline-block h-[1.05em] w-[2px] translate-y-[2px] bg-black align-baseline opacity-0"
@@ -686,31 +809,30 @@ export default function AskSavaDemo({
         {/* Waitlist replaces chat inside the same card */}
         <div
           ref={waitlistRef}
-          className="flex w-full flex-col items-stretch gap-4 sm:gap-5"
+          className="flex w-full flex-col items-stretch"
           style={{ display: "none" }}
         >
           <div
-            ref={buildingRef}
-            className="inline-flex items-center gap-2 self-start sm:gap-2.5"
+            ref={waitlistFormRef}
+            className="flex w-full flex-col items-stretch gap-4 sm:gap-5"
           >
-            <span className="status-sparkle inline-flex shrink-0">
-              <SparkleIcon />
-            </span>
-            <span className="text-[13px] leading-snug tracking-[-0.01em] text-[#1a1a1a] sm:text-[15px]">
-              {BUILDING_LABEL}
-            </span>
-          </div>
+            <div
+              ref={buildingRef}
+              className="inline-flex items-center gap-2 self-start sm:gap-2.5"
+            >
+              <span className="status-sparkle inline-flex shrink-0">
+                <SparkleIcon />
+              </span>
+              <span className="text-[14px] font-bold leading-snug tracking-[-0.01em] text-[#1a1a1a] sm:text-[16px]">
+                {BUILDING_LABEL}
+              </span>
+            </div>
 
-          <div ref={waitlistCtaRef} className="flex w-full flex-col gap-3 sm:gap-3.5">
-            <p className="text-[14px] leading-snug tracking-[-0.01em] text-[#1a1a1a] sm:text-[16px]">
-              {WAITLIST_LINE}
-            </p>
-
-            {joined ? (
-              <p className="text-[14px] text-[#4b5563] sm:text-[15px]">
-                You’re on the list — we’ll be in touch.
+            <div ref={waitlistCtaRef} className="flex w-full flex-col gap-3 sm:gap-3.5">
+              <p className="text-[14px] leading-snug tracking-[-0.01em] text-[#1a1a1a] sm:text-[16px]">
+                {WAITLIST_LINE}
               </p>
-            ) : (
+
               <form
                 onSubmit={onWaitlistSubmit}
                 className="flex w-full flex-col gap-2"
@@ -721,13 +843,13 @@ export default function AskSavaDemo({
                     name="email"
                     required
                     autoComplete="email"
-                    disabled={waitlistLoading}
+                    disabled={waitlistLoading || joined}
                     placeholder="Enter your email"
                     className="min-w-0 flex-1 bg-transparent px-2.5 py-2 text-[13px] text-[#1a1a1a] outline-none placeholder:text-[#9ca3af] disabled:opacity-60 sm:px-3 sm:text-[15px]"
                   />
                   <button
                     type="submit"
-                    disabled={waitlistLoading}
+                    disabled={waitlistLoading || joined}
                     className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl bg-[#FD7A35] px-3.5 text-[13px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60 sm:h-10 sm:px-4"
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -746,7 +868,18 @@ export default function AskSavaDemo({
                   <p className="px-1 text-[12px] text-red-600 sm:text-[13px]">{waitlistError}</p>
                 ) : null}
               </form>
-            )}
+            </div>
+          </div>
+
+          <div
+            ref={successRef}
+            className="flex items-center justify-center gap-2 px-0.5 py-0"
+            style={{ display: "none" }}
+          >
+            <DoubleTickIcon />
+            <p className="text-[13px] font-medium leading-snug tracking-[-0.01em] text-[#1a1a1a] sm:text-[15px]">
+              {SUCCESS_MESSAGE}
+            </p>
           </div>
         </div>
 
