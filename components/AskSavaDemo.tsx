@@ -65,16 +65,36 @@ export default function AskSavaDemo({
   const user2TextRef = useRef<HTMLSpanElement>(null);
 
   const [joined, setJoined] = useState(false);
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
+  const [waitlistError, setWaitlistError] = useState("");
   const [showSkip, setShowSkip] = useState(true);
   const skipHandlerRef = useRef<() => void>(() => {});
   const atWaitlistRef = useRef(false);
 
-  const onWaitlistSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onWaitlistSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const email = new FormData(form).get("email");
-    if (typeof email === "string" && email.trim()) {
+    if (typeof email !== "string" || !email.trim()) return;
+
+    setWaitlistError("");
+    setWaitlistLoading(true);
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setWaitlistError(data.error || "Something went wrong. Try again.");
+        return;
+      }
       setJoined(true);
+    } catch {
+      setWaitlistError("Something went wrong. Try again.");
+    } finally {
+      setWaitlistLoading(false);
     }
   };
 
@@ -693,31 +713,38 @@ export default function AskSavaDemo({
             ) : (
               <form
                 onSubmit={onWaitlistSubmit}
-                className="flex w-full items-center gap-2 rounded-2xl border border-[#e5e5e5] bg-[#faf9f6] p-1.5 sm:gap-2.5 sm:p-2"
+                className="flex w-full flex-col gap-2"
               >
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  autoComplete="email"
-                  placeholder="Enter your email"
-                  className="min-w-0 flex-1 bg-transparent px-2.5 py-2 text-[13px] text-[#1a1a1a] outline-none placeholder:text-[#9ca3af] sm:px-3 sm:text-[15px]"
-                />
-                <button
-                  type="submit"
-                  className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl bg-[#FD7A35] px-3.5 text-[13px] font-medium text-white transition-opacity hover:opacity-90 sm:h-10 sm:px-4"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path
-                      d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"
-                      stroke="currentColor"
-                      strokeWidth="1.75"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  Send
-                </button>
+                <div className="flex w-full items-center gap-2 rounded-2xl border border-[#e5e5e5] bg-[#faf9f6] p-1.5 sm:gap-2.5 sm:p-2">
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    autoComplete="email"
+                    disabled={waitlistLoading}
+                    placeholder="Enter your email"
+                    className="min-w-0 flex-1 bg-transparent px-2.5 py-2 text-[13px] text-[#1a1a1a] outline-none placeholder:text-[#9ca3af] disabled:opacity-60 sm:px-3 sm:text-[15px]"
+                  />
+                  <button
+                    type="submit"
+                    disabled={waitlistLoading}
+                    className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl bg-[#FD7A35] px-3.5 text-[13px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60 sm:h-10 sm:px-4"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {waitlistLoading ? "Sending…" : "Send"}
+                  </button>
+                </div>
+                {waitlistError ? (
+                  <p className="px-1 text-[12px] text-red-600 sm:text-[13px]">{waitlistError}</p>
+                ) : null}
               </form>
             )}
           </div>
