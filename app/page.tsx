@@ -13,7 +13,7 @@ const jsonLd = {
 
 export default function Home() {
   return (
-    <div className="relative h-[100vh] max-h-[100vh] overflow-hidden bg-[#f0efe7]">
+    <div className="relative h-[100svh] max-h-[100svh] overflow-hidden bg-[#f0efe7]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

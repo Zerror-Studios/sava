@@ -3,6 +3,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
+import Image from "next/image";
 import { useRef } from "react";
 
 gsap.registerPlugin(useGSAP, SplitText);
@@ -20,21 +21,6 @@ const STATUS_PHRASES = ["Building sava.com"];
 const FINALE_COMING_SOON = "coming soon...";
 const FINALE_SAVA = "sava.com";
 const STATUS_HOLD = 1.65;
-
-function HandCursorIcon() {
-  return (
-    <svg width="36" height="40" viewBox="0 0 36 40" fill="none" aria-hidden="true">
-      <path
-        d="M12.5 18.5V8.75a2.25 2.25 0 0 1 4.5 0V16.5m0 0V6.75a2.25 2.25 0 0 1 4.5 0V16.5m0 0V8.25a2.25 2.25 0 0 1 4.5 0V19m0 0v-6.25a2.25 2.25 0 1 1 4.5 0v9.5c0 5.247-4.253 9.5-9.5 9.5h-1.382a9.5 9.5 0 0 1-6.715-2.785l-5.95-5.95a2.652 2.652 0 0 1 3.75-3.75l2.347 2.347"
-        fill="#fff"
-        stroke="#111"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function SparkleIcon() {
   return (
@@ -877,10 +863,18 @@ export default function AskSavaDemo() {
 
         <div
           ref={handRef}
-          className="pointer-events-none absolute z-20 scale-75 drop-shadow-md sm:scale-100"
+          className="pointer-events-none absolute z-20 isolate scale-75 sm:scale-100"
           style={{ opacity: 0 }}
         >
-          <HandCursorIcon />
+          <Image
+            src="/pointinghand.webp"
+            alt=""
+            width={44}
+            height={48}
+            className="h-10 w-auto drop-shadow-md sm:h-11"
+            aria-hidden="true"
+            unoptimized
+          />
         </div>
       </div>
 
