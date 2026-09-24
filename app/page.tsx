@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Hero from "@/components/Hero";
+import BackgroundRipple from "@/components/BackgroundRipple";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -18,15 +18,7 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Image
-        src="/background.png"
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="pointer-events-none object-cover object-center lg:object-left"
-        aria-hidden="true"
-      />
+      <BackgroundRipple />
       <Hero />
     </div>
   );
