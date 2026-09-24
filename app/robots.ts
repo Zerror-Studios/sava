@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://sava.com/sitemap.xml",
-    host: "https://sava.com",
+    sitemap: "https://www.savaclub.co/sitemap.xml",
+    host: "https://www.savaclub.co",
   };
 }

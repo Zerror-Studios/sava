@@ -21,7 +21,7 @@ const bebasNeue = Bebas_Neue({
   display: "swap",
 });
 
-const siteUrl = "https://sava.com";
+const siteUrl = "https://www.savaclub.co";
 const siteName = "Sava";
 const title = "Sava — Coming Soon";
 const description =

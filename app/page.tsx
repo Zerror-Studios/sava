@@ -5,8 +5,8 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Sava",
-  url: "https://sava.com",
-  logo: "https://sava.com/favicon.png",
+  url: "https://www.savaclub.co",
+  logo: "https://www.savaclub.co/favicon.png",
   description:
     "Sava is a clinical formula built to reduce sweat first, with a clean scent designed to stay clean — not cover anything up.",
 };

@@ -17,9 +17,9 @@ const AI_RESPONSE =
 const AI_QUESTION = "Want me to build a solution for you?";
 const USER_CONFIRM = "Yes, build it for me.";
 
-const STATUS_PHRASES = ["Building sava.com"];
+const STATUS_PHRASES = ["Building savaclub.co"];
 const FINALE_COMING_SOON = "coming soon...";
-const FINALE_SAVA = "sava.com";
+const FINALE_SAVA = "savaclub.co";
 const STATUS_HOLD = 1.65;
 
 function SparkleIcon() {
