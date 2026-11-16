@@ -38,15 +38,7 @@ export const metadata: Metadata = {
   authors: [{ name: siteName, url: siteUrl }],
   creator: siteName,
   publisher: siteName,
-  keywords: [
-    "Sava",
-    "sweat care",
-    "antiperspirant",
-    "clinical formula",
-    "body odor",
-    "clean scent",
-    "coming soon",
-  ],
+  keywords: ["Sava", "sweat care", "antiperspirant", "clinical formula", "body odor", "clean scent", "coming soon"],
   category: "health",
   referrer: "origin-when-cross-origin",
   formatDetection: {
@@ -109,14 +101,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${fraunces.variable} ${bebasNeue.variable} h-full antialiased`}
-    >
-      <body
-        className="min-h-full flex flex-col font-sans"
-        suppressHydrationWarning
-      >
+    <html lang="en" className={`${inter.variable} ${fraunces.variable} ${bebasNeue.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col font-sans" suppressHydrationWarning>
         {children}
       </body>
     </html>

@@ -38,7 +38,7 @@ body {
   min-height: 100%;
   overflow: hidden;
 }
-*::selection{
+*::selection {
   background: #000000 !important;
   color: #fff;
 }

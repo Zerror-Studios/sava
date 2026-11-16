@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Frame } from "@/components/ui/Frame";
 import { siteConfig } from "@/config/site";
-import { getProduct } from "@/services/catalog";
+import { findProduct } from "@/services/catalog";
 import { formatPrice } from "@/utils/format";
 import { displayPrice } from "@/utils/product";
 import HeroAddToCart from "./HeroAddToCart";
@@ -24,7 +24,7 @@ const highlights = [
 ];
 
 export default async function HomeHero() {
-  const product = await getProduct(siteConfig.featuredProductSlug);
+  const product = await findProduct(siteConfig.featuredProductSlug);
 
   return (
     <>

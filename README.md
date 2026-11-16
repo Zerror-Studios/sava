@@ -1,23 +1,28 @@
 # SAVA
 
-Storefront for **SAVA**, built on the Zerror z-com starter: Next.js (App Router) + TypeScript + Tailwind CSS v4, with all catalogue, cart, account and order data coming from the **z-commerce** GraphQL API.
+Storefront for **SAVA**: Next.js (App Router) + TypeScript + Tailwind CSS v4. All catalogue, cart, account, checkout and order data comes from the **Zcom** store `sava`, through [`@zcom/storefront-kit`](https://github.com/Zerror-Studios/zcom-storefront-kit) (private; installed from a GitHub tag).
 
 ## Getting started
 
 ```bash
-cp .env.example .env.local   # then fill in the z-commerce values
-npm install
-npm run dev                  # http://localhost:3000
+# .env.local (never committed): the variables below
+npm install   # your own git login reads the private kit
+npm run dev   # http://localhost:3000
 ```
 
-With the z-commerce values empty the site runs on a **demo catalogue** (`src/data/mock-products.ts`), so pages can be designed before the store exists. Cart, sign-in, checkout and the contact form need the real API.
+| Variable                    | What it is                                                                   |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_TENANT_DOMAIN` | The store's domain (`savaclub.co`): selects the Zcom store                   |
+| `API_GATEWAY_URL`           | Zcom gateway, server only (`https://api.zerrorstudios.com`, or a local one)  |
+| `EDGE_SHARED_SECRET`        | Signs the server's calls to the gateway; server only, required in production |
+| `ZCOM_STORE_SLUG`           | `sava`, for the go-live identity check `/.well-known/zcom-store`             |
+| `NEXT_PUBLIC_SITE_URL`      | Public URL of this site (canonical URLs, OG tags)                            |
 
-| Variable                       | What it is                                                             |
-| ------------------------------ | ---------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`         | Public URL of this site (canonical URLs, sitemap, OG tags)             |
-| `NEXT_PUBLIC_GRAPHQL_API_URL`  | z-commerce GraphQL endpoint                                            |
-| `NEXT_PUBLIC_BACKEND_ENDPOINT` | z-commerce REST base, used to verify Nimbbl payments                   |
-| `NEXT_PUBLIC_DB_TOKEN`         | The client's store token from the z-commerce admin (sent as `dbtoken`) |
+Payment keys, currency, shipping and products come from the store (the Zcom dashboard), never from env.
+
+**Hosting (AWS Amplify):** set the variables above plus the team's shared read-only `GITHUB_TOKEN` in the Amplify app's environment variables. `amplify.yml` uses the token to install the private kit, and writes the store variables (not the token) to `.env.production` before the build, because Amplify doesn't pass environment variables to the Next server at run time.
+
+**Products:** `scripts/zcom/` holds the catalogue the store was loaded from (`sava-catalogue.json`, built from the design's demo data by `build-catalogue.mjs`) and the importer that loads it (`import-sava-products.mjs`, the kit's importer with Size × Pack prices): `node scripts/zcom/import-sava-products.mjs --gateway <url> --store sava --file scripts/zcom/sava-catalogue.json --public-dir ./public --media-folder Products` lists what it would create; add `--yes` to import (it asks for the store login).
 
 **Coming soon:** `/` is the coming-soon page and every other route needs the preview password from `src/lib/preview-gate.ts` (the store's home page is `/home`). See `CLAUDE.md`.
 
@@ -36,44 +41,37 @@ With the z-commerce values empty the site runs on a **demo catalogue** (`src/dat
 
 ```
 src/
-├── app/                      Routes (App Router) — thin: metadata + composition
-│   ├── page.tsx              Home
-│   ├── about/  contact/
-│   ├── shop/
-│   │   └── (listing)/        /shop — all products (?category=, ?page=) + loading skeleton
-│   ├── login/  signup/
-│   ├── account/              Tabs: overview · orders · addresses · profile (?tab=)
-│   ├── checkout/             Checkout → Nimbbl → thank-you/ or payment-failed/
+├── app/
+│   ├── (coming-soon)/        "/" — the coming-soon page and its own root layout
+│   ├── (site)/               The store (its own root layout), home at /home
+│   │   ├── home/  about/  contact/
+│   │   ├── shop/             (listing)/ — /shop (?category=, ?q=, ?page=); [slug]/ — product pages
+│   │   ├── login/  signup/  register/  forgot-password/  reset-password/
+│   │   ├── account/          Tabs: overview · orders · addresses · profile (?tab=)
+│   │   ├── checkout/         Checkout → the store's payment app → thank-you/ (or payment-failed/);
+│   │   │                     start/ (Meta's checkout link), payment-return/, success/
+│   │   ├── orders/status/[token]/  pay/[token]/  — order status and payment links from emails
+│   │   ├── unsubscribe/  back-in-stock/confirm/  review/  — email token pages
+│   │   └── privacy-policy/  terms-of-service/  shipping-returns/  licences/
+│   ├── api/                  waitlist (coming soon), preview-login, payments/return (Zcom kit)
 │   ├── og/route.tsx          Generated 1200×630 social card
-│   ├── icon.svg              Favicon
-│   └── sitemap.ts  robots.ts  manifest.ts  not-found.tsx  error.tsx
-├── components/
-│   ├── layout/               Header, Footer, CartDrawer, MobileMenu, SiteLayout, Logo
-│   ├── providers/            Apollo, Lenis smooth scroll, store hydration
-│   ├── ui/                   Button, BlobButton, form fields, Tabs, Drawer, Price…
-│   ├── product/              ShopProductCard, BuyNowButton, ShopFilters, RangeStrip
-│   ├── sections/             Page sections: home/, about/, contact/
-│   ├── auth/  account/  checkout/
-│   └── seo/JsonLd.tsx
-├── config/                   site.ts (brand, contact, SEO routes) · navigation.ts
-├── graphql/                  z-commerce operations: queries/, mutations/, fields.ts
-├── services/catalog.ts       Server-side catalogue reads (API or demo data)
-├── hooks/                    useCart, useAuth
-├── store/                    Zustand: auth, cart UI + guest id, toasts
-├── lib/                      apollo/ (client + server), seo, schema, payment, fonts, gsap, env
-├── utils/                    url, format, media, product, errors, cn
-├── types/                    z-commerce data types
-├── data/mock-products.ts     Demo catalogue
-├── styles/globals.css        Design tokens, type scale, layout utilities
-└── proxy.ts                  Redirects signed-out visitors away from /account
+│   └── sitemap.ts  robots.ts  manifest.ts  icon.svg
+├── components/               layout/ providers/ ui/ product/ sections/ auth/ account/ checkout/ coming-soon/
+├── config/                   site.ts (brand, contact, SEO routes) · navigation.ts · shop.ts
+├── services/catalog.ts       Server-side catalogue reads (Zcom kit → SAVA's shapes)
+├── hooks/                    useCart, useAuth, useWishlist, useQuickAdd (Zcom kit inside, the design's API outside)
+├── lib/zcom/adapters.ts      Zcom data → the types in src/types/zcommerce.ts
+├── store/                    Zustand: cart drawer open/closed, toasts
+├── zcom.config.ts            Store facts for the kit (name, currency, locale)
+└── proxy.ts                  Coming-soon gate + the Zcom kit's proxy (/v1/graphql, /account guard)
 ```
 
 ## How data flows
 
-- **Catalogue (SEO pages)** — Server Components call `src/services/catalog.ts`, which queries z-commerce through the server Apollo client (cached, revalidated every 60s). Product and category pages get real metadata and JSON-LD.
-- **Cart, account, checkout** — Client Components use Apollo hooks via `useCart()` / `useAuth()`. Every request carries `dbtoken` (the store) and, when signed in, `authtoken` (the customer). Expired access tokens are refreshed automatically.
-- **Guests** get a `guestId`; their bag is merged into the account on sign-in.
-- **Payment** — `clientCheckout` creates the order and returns a Nimbbl token → `src/lib/payment.ts` opens Nimbbl and verifies the result with the backend, which redirects to `/checkout/thank-you?orderId=…` or `/checkout/payment-failed`.
+- **Catalogue (SEO pages)** — Server Components call `src/services/catalog.ts`, which reads the Zcom store through `@zcom/storefront-kit/server` (signed edge headers) and turns the data into SAVA's shapes (`src/lib/zcom/adapters.ts`). Home and product pages re-read at most once a minute.
+- **Cart, account, checkout** — Client Components use the kit's hooks through `useCart()` / `useAuth()` / `useWishlist()`, which keep the design's own API. The browser talks to the store through this site's `/v1/graphql` proxy; the session lives in memory with an HttpOnly refresh cookie.
+- **Guests** get a server-issued guest bag, merged into the account on sign-in, and can check out without an account (when the store allows it).
+- **Payment** — checkout reserves the stock and fixes the amount, then the store's payment app (set up in the Zcom dashboard) opens its own window; paid orders go to `/orders/status/<token>`, others to `/checkout/thank-you?order=…`.
 
 ## Design system
 

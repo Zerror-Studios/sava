@@ -1,14 +1,19 @@
 /*
- * Catalogue reads for Server Components. Pages call these, never Apollo directly,
- * so the data source (z-commerce or the demo catalogue) is decided in one place.
- * React's cache() dedupes calls made by generateMetadata and the page in one request.
+ * Catalogue reads for Server Components, from the Zcom store through @zcom/storefront-kit/server.
+ * Pages call these, never the API directly; the kit's data is turned into SAVA's own shapes by
+ * src/lib/zcom/adapters.ts. React's cache() dedupes calls made by generateMetadata and the page in
+ * one request.
  */
+import {
+  getCategories as kitGetCategories,
+  getCategory as kitGetCategory,
+  getProduct as kitGetProduct,
+  getProducts as kitGetProducts,
+  getProductsByIds as kitGetProductsByIds,
+} from "@zcom/storefront-kit/server";
 import { cache } from "react";
-import { mockCategories, mockProducts } from "@/data/mock-products";
 import { productContent } from "@/data/product-content";
-import { GET_CATEGORIES, GET_CATEGORY, GET_PRODUCT, GET_PRODUCTS } from "@/graphql";
-import { query } from "@/lib/apollo/server";
-import { isApiConfigured } from "@/lib/env";
+import { toCategory, toProduct, toProductSummary } from "@/lib/zcom/adapters";
 import type { Category, Product, ProductSummary } from "@/types";
 import { isSoldOut } from "@/utils/product";
 
@@ -27,13 +32,9 @@ function logError(scope: string, error: unknown) {
 
 export const getProducts = cache(
   async ({ page = 1, limit = PAGE_SIZE }: { page?: number; limit?: number } = {}): Promise<ProductPage> => {
-    const offset = (page - 1) * limit;
-    if (!isApiConfigured) {
-      return { products: mockProducts.slice(offset, offset + limit), totalCount: mockProducts.length };
-    }
     try {
-      const { data } = await query({ query: GET_PRODUCTS, variables: { limit, offset } });
-      return data?.getClientSideProducts ?? empty;
+      const { products, totalCount } = await kitGetProducts({ limit, offset: (page - 1) * limit });
+      return { products: products.map(toProductSummary), totalCount };
     } catch (error) {
       logError("getProducts", error);
       return empty;
@@ -41,13 +42,35 @@ export const getProducts = cache(
   },
 );
 
+/**
+ * One published product by slug, or null (the page renders its 404). A gateway error is thrown, not
+ * turned into null, so a blip shows the error page instead of a cached "not found".
+ */
 export const getProduct = cache(async (slug: string): Promise<Product | null> => {
-  if (!isApiConfigured) return mockProducts.find((p) => p.slug === slug) ?? null;
+  const product = await kitGetProduct(slug);
+  return product ? toProduct(product) : null;
+});
+
+/** Products by slug, in the order given (missing ones skipped), topped up with the newest to `limit` */
+export const getProductsBySlugs = cache(async (slugs: string[], limit = slugs.length): Promise<ProductSummary[]> => {
   try {
-    const { data } = await query({ query: GET_PRODUCT, variables: { slug } });
-    return data?.getClientSideProductById ?? null;
+    const picked = (await kitGetProductsByIds({ slugs })).map(toProductSummary);
+    if (picked.length >= limit) return picked.slice(0, limit);
+    const { products } = await getProducts({ limit: limit * 2 });
+    const rest = products.filter((p) => !picked.some((q) => q._id === p._id));
+    return [...picked, ...rest].slice(0, limit);
   } catch (error) {
-    logError(`getProduct(${slug})`, error);
+    logError("getProductsBySlugs", error);
+    return (await getProducts({ limit })).products;
+  }
+});
+
+/** A product for a page section (home hero, reviews): null on any error, so a gateway blip only hides that section */
+export const findProduct = cache(async (slug: string): Promise<Product | null> => {
+  try {
+    return await getProduct(slug);
+  } catch (error) {
+    logError(`findProduct(${slug})`, error);
     return null;
   }
 });
@@ -66,10 +89,9 @@ export const getCartSuggestions = cache(async (limit = 3): Promise<ProductSummar
 });
 
 export const getCategories = cache(async (): Promise<Category[]> => {
-  if (!isApiConfigured) return mockCategories;
   try {
-    const { data } = await query({ query: GET_CATEGORIES, variables: { limit: 50 } });
-    return data?.getClientSideCategories.categories ?? [];
+    const { categories } = await kitGetCategories({ limit: 50 });
+    return categories.map(toCategory);
   } catch (error) {
     logError("getCategories", error);
     return [];
@@ -81,9 +103,9 @@ const SEARCH_POOL = 100;
 
 /**
  * The shop's search (/shop?q=): products whose name, scent or tagline (src/data/product-content.ts)
- * contains every word of the term, case-insensitive, a page at a time. z-commerce's product filters
- * don't document a text search, so the catalogue is fetched and matched here — move this to the API
- * if the range outgrows SEARCH_POOL.
+ * contains every word of the term, case-insensitive, a page at a time. The scent and tagline live
+ * only in this project, so the catalogue is fetched and matched here — move this to the API's
+ * `search` filter if the range outgrows SEARCH_POOL.
  */
 export const searchProducts = cache(async (term: string, page = 1): Promise<ProductPage> => {
   const words = term.toLowerCase().split(/\s+/).filter(Boolean);
@@ -99,19 +121,15 @@ export const searchProducts = cache(async (term: string, page = 1): Promise<Prod
 
 export const getCategoryProducts = cache(
   async (slug: string, page = 1): Promise<(ProductPage & { category: Category }) | null> => {
-    const offset = (page - 1) * PAGE_SIZE;
-    if (!isApiConfigured) {
-      const category = mockCategories.find((c) => c.slug === slug);
-      if (!category) return null;
-      const all = mockProducts.filter((p) => p.categoryIds?.includes(category._id));
-      return { category, products: all.slice(offset, offset + PAGE_SIZE), totalCount: all.length };
-    }
     try {
-      const { data } = await query({ query: GET_CATEGORY, variables: { slug, limit: PAGE_SIZE, offset } });
-      const result = data?.getClientSideCategory;
-      if (!result) return null;
-      const { products, productsCount, ...category } = result;
-      return { category, products, totalCount: productsCount };
+      const category = await kitGetCategory(slug);
+      if (!category) return null;
+      const { products, totalCount } = await kitGetProducts({
+        limit: PAGE_SIZE,
+        offset: (page - 1) * PAGE_SIZE,
+        filters: { categoryIds: [category._id] },
+      });
+      return { category: toCategory(category), products: products.map(toProductSummary), totalCount };
     } catch (error) {
       logError(`getCategoryProducts(${slug})`, error);
       return null;

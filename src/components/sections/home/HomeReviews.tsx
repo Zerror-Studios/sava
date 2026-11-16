@@ -5,7 +5,7 @@ import BlobButton from "@/components/ui/BlobButton";
 import { Frame, FrameRule } from "@/components/ui/Frame";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { siteConfig } from "@/config/site";
-import { getProduct } from "@/services/catalog";
+import { findProduct } from "@/services/catalog";
 import { cn } from "@/utils/cn";
 import { formatPrice } from "@/utils/format";
 import { displayPrice } from "@/utils/product";
@@ -140,7 +140,7 @@ const reviews: {
 ];
 
 export default async function HomeReviews() {
-  const product = await getProduct(siteConfig.featuredProductSlug);
+  const product = await findProduct(siteConfig.featuredProductSlug);
   const reviewed = product
     ? { name: product.name, price: formatPrice(displayPrice(product).price), href: productHref(product.slug) }
     : null;

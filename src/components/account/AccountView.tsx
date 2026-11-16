@@ -88,8 +88,8 @@ export default function AccountView({ tab }: { tab: AccountTab }) {
           className="rounded-3xl outline-none focus-visible:outline-2 focus-visible:outline-offset-4"
         >
           {tab === "overview" && <OverviewTab user={user} />}
-          {tab === "orders" && <OrdersTab userId={user._id} />}
-          {tab === "addresses" && <AddressesTab userId={user._id} />}
+          {tab === "orders" && <OrdersTab />}
+          {tab === "addresses" && <AddressesTab />}
           {tab === "profile" && <ProfileTab user={user} />}
         </div>
       </div>

@@ -4,7 +4,8 @@ import { Frame, FrameRule } from "@/components/ui/Frame";
 import Price from "@/components/ui/Price";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { stickVariantFor } from "@/lib/sava-stick";
-import { getProducts } from "@/services/catalog";
+import { homeBestsellers } from "@/config/shop";
+import { getProductsBySlugs } from "@/services/catalog";
 import type { ProductSummary } from "@/types";
 import { cn } from "@/utils/cn";
 import { mediaUrl, primaryImage } from "@/utils/media";
@@ -12,7 +13,7 @@ import { displayPrice } from "@/utils/product";
 import { productHref } from "@/utils/url";
 
 export default async function HomeBestsellers() {
-  const { products } = await getProducts({ limit: 3 });
+  const products = await getProductsBySlugs(homeBestsellers, 3);
   if (products.length === 0) return null;
 
   return (

@@ -32,7 +32,7 @@ export default function SignupForm() {
         password: v.password,
         countryCode: v.countryCode || "+91",
         phoneNumber: v.phoneNumber,
-        emailSubscribedStatus: v.newsletter ? "SUBSCRIBED" : "NEVER_SUBSCRIBED",
+        acceptsMarketing: Boolean(v.newsletter),
       });
       router.replace("/account");
     } catch (err) {

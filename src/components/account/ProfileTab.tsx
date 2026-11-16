@@ -1,57 +1,54 @@
 "use client";
 
-import { useMutation } from "@apollo/client/react";
+import { useAuth, useProfile } from "@zcom/storefront-kit/client";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextField, formValues } from "@/components/ui/form";
-import { CHANGE_PASSWORD, UPDATE_PROFILE } from "@/graphql";
-import { useAuthStore } from "@/store/auth-store";
 import { toast } from "@/store/toast-store";
 import type { User } from "@/types";
 import { errorMessage } from "@/utils/errors";
 
 export default function ProfileTab({ user }: { user: User }) {
-  const [updateProfile, { loading: savingProfile }] = useMutation(UPDATE_PROFILE);
-  const [changePassword, { loading: savingPassword }] = useMutation(CHANGE_PASSWORD);
+  const { update, updating: savingProfile } = useProfile();
+  const { requestPasswordReset } = useAuth();
+  const [savingPassword, setSavingPassword] = useState(false);
 
   async function onProfile(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const v = formValues(e.currentTarget);
     try {
-      const { data } = await updateProfile({
-        variables: {
-          id: user._id,
-          input: {
-            firstName: v.firstName,
-            lastName: v.lastName,
-            email: user.email,
-            countryCode: v.countryCode,
-            phoneNumber: v.phoneNumber,
-          },
-        },
+      // The profile query refreshes from the answer, so the page shows the new details
+      await update({
+        firstName: v.firstName,
+        lastName: v.lastName,
+        countryCode: v.countryCode,
+        phoneNumber: v.phoneNumber,
       });
-      if (data?.clientUserUpdate.user) useAuthStore.getState().setUser({ ...user, ...data.clientUserUpdate.user });
       toast.success("Profile updated");
     } catch (error) {
       toast.error(errorMessage(error, "Couldn't update your profile."));
     }
   }
 
+  /*
+   * Zcom has no "change password" for shoppers yet (only a reset by email), so this sends the
+   * account's email a link to set the new password. Switch to a change-password call once the API has one.
+   */
   async function onPassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const v = formValues(form);
     if (v.newPassword.length < 8) return toast.error("Use at least 8 characters for the new password.");
     if (v.newPassword !== v.confirmPassword) return toast.error("New passwords don't match.");
+    setSavingPassword(true);
     try {
-      const { data } = await changePassword({
-        variables: { email: user.email, currentPassword: v.currentPassword, newPassword: v.newPassword },
-      });
-      const result = data?.changeUserPassword;
-      if (result?.accessToken) useAuthStore.getState().setTokens(result.accessToken, result.refreshToken);
+      await requestPasswordReset(user.email);
       form.reset();
-      toast.success("Password changed");
+      toast.success(`For your security, we've emailed ${user.email} a link to confirm your new password.`);
     } catch (error) {
       toast.error(errorMessage(error, "Couldn't change your password."));
+    } finally {
+      setSavingPassword(false);
     }
   }
 

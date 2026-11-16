@@ -12,20 +12,19 @@ import { Frame, FrameRule } from "@/components/ui/Frame";
 import { productContent } from "@/data/product-content";
 import { productSchema } from "@/lib/schema";
 import { createMetadata } from "@/lib/seo";
-import { getProduct, getProducts, getRelatedProducts } from "@/services/catalog";
+import { getProduct, getRelatedProducts } from "@/services/catalog";
 import { primaryImage } from "@/utils/media";
 import { productHref } from "@/utils/url";
 
 type Params = Promise<{ slug: string }>;
 
-// Every product is built as a static page — from the demo catalogue until z-commerce is connected,
-// then from the store's products. Only those slugs exist: any other gets its 404 from the router,
-// before loading.tsx can stream (a product added to the store later needs a rebuild to get a page).
-export const dynamicParams = false;
+// Each product page renders on its first visit and is then cached, refreshed every minute. Nothing is
+// built ahead: prerendering every product at build time hits the gateway's rate limit (the build's
+// calls share one IP). An unknown slug gets its real 404 from ./layout.tsx, before loading.tsx streams.
+export const revalidate = 60;
 
-export async function generateStaticParams() {
-  const { products } = await getProducts({ limit: 1000 });
-  return products.map((p) => ({ slug: p.slug }));
+export function generateStaticParams() {
+  return [];
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {

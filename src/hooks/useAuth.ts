@@ -1,58 +1,76 @@
 "use client";
 
-import { useApolloClient } from "@apollo/client/react";
+import { useAuth as useZcomAuth, useProfile } from "@zcom/storefront-kit/client";
 import { useRouter } from "next/navigation";
-import { LOGIN, LOGOUT, SIGN_UP, type SignUpInput } from "@/graphql";
-import { isApiConfigured } from "@/lib/env";
-import { selectIsLoggedIn, useAuthStore } from "@/store/auth-store";
-import { useCartStore } from "@/store/cart-store";
+import { useMemo } from "react";
+import type { User } from "@/types";
 
-const notConfigured = () => new Error("Demo mode — connect z-commerce in .env.local to sign in.");
+export interface SignUpInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNumber?: string;
+  countryCode?: string;
+  /** Opt in to marketing email */
+  acceptsMarketing?: boolean;
+}
 
+/*
+ * The signed-in shopper, through the Zcom kit (session in memory, refresh cookie HttpOnly; the guest
+ * bag is merged into the account at sign-in). Keeps the shape the design's components were built on.
+ */
 export function useAuth() {
-  const client = useApolloClient();
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
-  const hydrated = useAuthStore((s) => s.hydrated);
-  const isLoggedIn = useAuthStore(selectIsLoggedIn);
+  const auth = useZcomAuth();
+  const { profile } = useProfile();
 
-  /** Throws with the API's message on bad credentials — show it in the form */
+  const user = useMemo<User | null>(() => {
+    if (!auth.isLoggedIn || !profile) return null;
+    return {
+      _id: profile._id,
+      firstName: profile.firstName ?? "",
+      lastName: profile.lastName ?? "",
+      email: profile.email,
+      phoneNumber: profile.phoneNumber,
+      countryCode: profile.countryCode,
+      gender: profile.gender,
+      dateOfBirth: profile.dateOfBirth,
+      profileImg: profile.profileImg,
+    };
+  }, [auth.isLoggedIn, profile]);
+
+  /** Throws on bad credentials — show errorMessage(error) in the form */
   async function login(email: string, password: string) {
-    if (!isApiConfigured) throw notConfigured();
-    const { data } = await client.query({
-      query: LOGIN,
-      // guestId lets z-commerce move the guest's bag into the account
-      variables: { email, password, guestId: useCartStore.getState().guestId },
-      fetchPolicy: "no-cache",
-    });
-    if (!data?.userLogin?.accessToken) throw new Error("Incorrect email or password.");
-    useAuthStore.getState().setSession(data.userLogin);
-    useCartStore.getState().resetGuestId();
-    return data.userLogin.user;
+    await auth.login(email, password);
   }
 
-  async function signup(input: Omit<SignUpInput, "status">) {
-    if (!isApiConfigured) throw notConfigured();
-    const { data } = await client.mutate({
-      mutation: SIGN_UP,
-      variables: { input: { ...input, status: "ACTIVE" } },
+  async function signup(input: SignUpInput) {
+    await auth.signup({
+      email: input.email,
+      password: input.password,
+      firstName: input.firstName,
+      lastName: input.lastName,
+      phoneNumber: input.phoneNumber,
+      countryCode: input.countryCode,
+      acceptsMarketing: input.acceptsMarketing,
     });
-    if (!data?.clientUserSave?.accessToken) throw new Error("Couldn't create your account.");
-    useAuthStore.getState().setSession(data.clientUserSave);
-    useCartStore.getState().resetGuestId();
-    return data.clientUserSave.user;
   }
 
   async function logout() {
-    const userId = useAuthStore.getState().user?._id;
-    if (userId && isApiConfigured) {
-      // Best effort — the local session is cleared either way
-      await client.mutate({ mutation: LOGOUT, variables: { userId } }).catch(() => undefined);
-    }
-    useAuthStore.getState().clear();
-    await client.clearStore();
+    // Clears the local session even when the server can't be reached
+    await auth.logout();
     router.push("/home");
   }
 
-  return { user, hydrated, isLoggedIn, login, signup, logout };
+  return {
+    user,
+    /** false while the session is being restored on first load — don't treat that as signed out */
+    hydrated: auth.isReady,
+    isLoggedIn: auth.isLoggedIn,
+    login,
+    signup,
+    logout,
+    requestPasswordReset: auth.requestPasswordReset,
+  };
 }

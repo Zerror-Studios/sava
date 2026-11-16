@@ -1,42 +1,36 @@
 "use client";
 
-import { useMutation, useQuery } from "@apollo/client/react";
 import { RiAddLine, RiEditLine, RiMapPin2Line } from "@remixicon/react";
-import { useState } from "react";
+import { useAddresses } from "@zcom/storefront-kit/client";
+import { useMemo, useState } from "react";
 import AddressFields, { readAddress } from "@/components/checkout/AddressFields";
 import { Button } from "@/components/ui/Button";
 import { Checkbox, TextField, formValues } from "@/components/ui/form";
 import Skeleton from "@/components/ui/Skeleton";
-import { GET_ADDRESSES, SAVE_ADDRESS } from "@/graphql";
+import { toAddress } from "@/lib/zcom/adapters";
 import { toast } from "@/store/toast-store";
 import type { Address } from "@/types";
 import { errorMessage } from "@/utils/errors";
 
-export default function AddressesTab({ userId }: { userId: string }) {
-  const { data, loading } = useQuery(GET_ADDRESSES, {
-    variables: { filters: { userId }, limit: 50, sort: { primary: "DESC", createdAt: "DESC" } },
-  });
-  const [save, { loading: saving }] = useMutation(SAVE_ADDRESS, { refetchQueries: ["GetAddressByFilters"] });
+export default function AddressesTab() {
+  const zcom = useAddresses();
+  const saving = zcom.saving;
   // null = list view, "new" = blank form, otherwise the address being edited
   const [editing, setEditing] = useState<Address | "new" | null>(null);
-  const addresses = data?.getAddressByFilters.data ?? [];
+  // The default first, as the design lists them
+  const addresses = useMemo(
+    () => zcom.addresses.map(toAddress).sort((a, b) => Number(Boolean(b.primary)) - Number(Boolean(a.primary))),
+    [zcom.addresses],
+  );
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const v = formValues(e.currentTarget);
     const current = editing !== "new" ? editing : null;
+    const input = { ...readAddress(v, "address"), addressType: v.addressType || "Home", primary: Boolean(v.primary) };
     try {
-      await save({
-        variables: {
-          input: {
-            ...readAddress(v, "address"),
-            userId,
-            addressType: v.addressType || "Home",
-            primary: Boolean(v.primary),
-          },
-          ...(current?._id ? { id: current._id } : {}),
-        },
-      });
+      if (current?._id) await zcom.update(current._id, input);
+      else await zcom.create(input);
       toast.success("Address saved");
       setEditing(null);
     } catch (error) {
@@ -44,7 +38,7 @@ export default function AddressesTab({ userId }: { userId: string }) {
     }
   }
 
-  if (loading && !data) {
+  if (zcom.loading && zcom.addresses.length === 0) {
     return (
       <div className="grid gap-grid md:grid-cols-2">
         <Skeleton className="h-52 rounded-3xl" />

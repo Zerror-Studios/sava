@@ -12,11 +12,7 @@ type DynamicIslandProps = {
   onReload: () => void;
 };
 
-export default function DynamicIsland({
-  showSkip,
-  onSkip,
-  onReload,
-}: DynamicIslandProps) {
+export default function DynamicIsland({ showSkip, onSkip, onReload }: DynamicIslandProps) {
   const shellRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const playedIntroRef = useRef(false);
@@ -115,10 +111,7 @@ export default function DynamicIsland({
         role="toolbar"
         aria-label="Demo controls"
       >
-        <div
-          ref={contentRef}
-          className="flex h-full w-max items-center gap-0.5 whitespace-nowrap p-0.5"
-        >
+        <div ref={contentRef} className="flex h-full w-max items-center gap-0.5 p-0.5 whitespace-nowrap">
           {showSkip ? (
             <button
               type="button"
@@ -145,9 +138,7 @@ export default function DynamicIsland({
             </button>
           ) : null}
 
-          {showSkip ? (
-            <span className="h-3 w-px shrink-0 bg-white/15" aria-hidden="true" />
-          ) : null}
+          {showSkip ? <span className="h-3 w-px shrink-0 bg-white/15" aria-hidden="true" /> : null}
 
           <button
             type="button"

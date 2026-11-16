@@ -1,3 +1,4 @@
+import { CONSENT_DEFAULT_SCRIPT } from "@zcom/storefront-kit/core";
 import type { Metadata, Viewport } from "next";
 import "lenis/dist/lenis.css";
 import "@/styles/globals.css";
@@ -19,7 +20,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={siteConfig.language} className={fontVariables}>
+    // suppressHydrationWarning: the consent script below stamps data-zcom-consent on <html> before React loads
+    <html lang={siteConfig.language} className={fontVariables} suppressHydrationWarning>
+      <head>
+        {/* Zcom consent defaults (a returning shopper's stored choice) before any tag loads; a plain
+            <script>, since next/script's beforeInteractive runs after the first paint */}
+        <script id="zcom-consent" dangerouslySetInnerHTML={{ __html: CONSENT_DEFAULT_SCRIPT }} />
+      </head>
       {/* Browser extensions (ColorZilla, Grammarly…) stamp attributes on <body> before React loads;
           this ignores attribute mismatches on <body> itself only, not on anything inside it */}
       <body suppressHydrationWarning>

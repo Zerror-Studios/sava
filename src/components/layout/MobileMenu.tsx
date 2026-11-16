@@ -7,7 +7,7 @@ import Drawer from "@/components/ui/Drawer";
 import Sparkle from "@/components/ui/Sparkle";
 import { mainNav, socialNav } from "@/config/navigation";
 import { useDrawerMotion } from "@/hooks/useDrawerMotion";
-import { selectIsLoggedIn, useAuthStore } from "@/store/auth-store";
+import { useAuth } from "@zcom/storefront-kit/client";
 import { cn } from "@/utils/cn";
 
 /** An icon for each social link, by label (socialNav) */
@@ -25,7 +25,7 @@ const socialIcons: Record<string, typeof RiInstagramLine> = {
  */
 export default function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
-  const isLoggedIn = useAuthStore(selectIsLoggedIn);
+  const { isLoggedIn } = useAuth();
   const links = [
     { label: "Home", href: "/home" },
     ...mainNav,

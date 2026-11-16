@@ -10,16 +10,14 @@ gsap.registerPlugin(useGSAP);
 
 const PLACEHOLDER = "Describe what you want to create...";
 const EMPTY_PLACEHOLDER = "Write a message...";
-const TYPED_MESSAGE =
-  "I sweat a lot, and when I apply perfume, the smell somehow gets even worse.";
+const TYPED_MESSAGE = "I sweat a lot, and when I apply perfume, the smell somehow gets even worse.";
 const AI_RESPONSE =
   "That’s because perfume mainly masks odor instead of addressing the problem. SAVA is designed to help you stay fresh and tackle sweat-related odor.";
 const AI_QUESTION = "Want me to build a solution for you?";
 const USER_CONFIRM = "Yes, build it for me.";
 
 const BUILDING_LABEL = "Building savaclub.co";
-const WAITLIST_LINE =
-  "Join the waitlist to be the first to know when we launch.";
+const WAITLIST_LINE = "Join the waitlist to be the first to know when we launch.";
 const SUCCESS_MESSAGE = "You’re on the list — we’ll be in touch.";
 
 function SparkleIcon() {
@@ -38,29 +36,13 @@ function SparkleIcon() {
 function DoubleTickIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M2.5 12.5 6 16l7.5-8"
-        stroke="#FD7A35"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M8.5 12.5 12 16l9-10"
-        stroke="#FD7A35"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M2.5 12.5 6 16l7.5-8" stroke="#FD7A35" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8.5 12.5 12 16l9-10" stroke="#FD7A35" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-export default function AskSavaDemo({
-  onRequestReload,
-}: {
-  onRequestReload?: () => void;
-}) {
+export default function AskSavaDemo({ onRequestReload }: { onRequestReload?: () => void }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const threadRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
@@ -153,13 +135,9 @@ export default function AskSavaDemo({
         gsap.set(card, { width: fromW, height: fromH });
         card.dataset.toW = String(toW);
         card.dataset.toH = String(toH);
-        card.dataset.padT = String(
-          window.matchMedia("(max-width: 639px)").matches ? 6 : 8,
-        );
+        card.dataset.padT = String(window.matchMedia("(max-width: 639px)").matches ? 6 : 8);
         card.dataset.padB = card.dataset.padT;
-        card.dataset.padX = String(
-          window.matchMedia("(max-width: 639px)").matches ? 10 : 12,
-        );
+        card.dataset.padX = String(window.matchMedia("(max-width: 639px)").matches ? 10 : 12);
       })
       .to(card, {
         width: () => Number(card.dataset.toW),
@@ -183,11 +161,7 @@ export default function AskSavaDemo({
           delete card.dataset.padX;
         },
       })
-      .to(
-        success,
-        { opacity: 1, scale: 1, duration: 0.45, ease: "power2.out" },
-        "-=0.35",
-      );
+      .to(success, { opacity: 1, scale: 1, duration: 0.45, ease: "power2.out" }, "-=0.35");
   };
 
   const onWaitlistSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -361,19 +335,7 @@ export default function AskSavaDemo({
         cursorBlink?.kill();
         bubbleCursorBlink?.kill();
         tl.kill();
-        gsap.killTweensOf([
-          card,
-          thread,
-          composer,
-          hand,
-          building,
-          waitlistCta,
-          waitlist,
-          user1,
-          ai1,
-          ai2,
-          user2,
-        ]);
+        gsap.killTweensOf([card, thread, composer, hand, building, waitlistCta, waitlist, user1, ai1, ai2, user2]);
         showWaitlistState();
       };
       skipHandlerRef.current = jumpToWaitlist;
@@ -502,11 +464,7 @@ export default function AskSavaDemo({
       };
 
       // --- Conversation timeline ---
-      tl.fromTo(
-        card,
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.75, ease: "power2.out" },
-      )
+      tl.fromTo(card, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.75, ease: "power2.out" })
         .to({}, { duration: 0.55 })
         .add(() => {
           clearComposerForTyping();
@@ -661,11 +619,7 @@ export default function AskSavaDemo({
             delete card.dataset.settleH;
           },
         })
-        .to(
-          building,
-          { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" },
-          "-=0.35",
-        )
+        .to(building, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, "-=0.35")
         .add(() => {
           atWaitlistRef.current = true;
           setShowSkip(false);
@@ -683,13 +637,10 @@ export default function AskSavaDemo({
   );
 
   return (
-    <div
-      ref={rootRef}
-      className="relative flex w-full min-w-0 max-w-full items-center justify-center"
-    >
+    <div ref={rootRef} className="relative flex w-full max-w-full min-w-0 items-center justify-center">
       <div
         ref={cardRef}
-        className="ask-sava-card relative mx-auto flex w-full min-w-0 max-w-full flex-col overflow-visible rounded-[20px] border border-[#e4e2dc] bg-white px-3 pb-3 pt-3.5 shadow-[0_1px_2px_rgba(1,17,102,0.04)] sm:rounded-[32px] sm:px-6 sm:pb-5 sm:pt-6"
+        className="ask-sava-card relative mx-auto flex w-full max-w-full min-w-0 flex-col overflow-visible rounded-[20px] border border-[#e4e2dc] bg-white px-3 pt-3.5 pb-3 shadow-[0_1px_2px_rgba(1,17,102,0.04)] sm:rounded-[32px] sm:px-6 sm:pt-6 sm:pb-5"
         aria-hidden="true"
       >
         <div ref={threadRef} className="chat-thread flex w-full min-w-0 flex-col gap-2 sm:gap-3">
@@ -729,7 +680,7 @@ export default function AskSavaDemo({
         <div ref={composerRef} className="composer w-full min-w-0 shrink-0">
           <p
             ref={messageRef}
-            className="mb-2.5 min-h-[1.4em] break-words text-[13px] leading-relaxed sm:mb-3 sm:text-[16px]"
+            className="mb-2.5 min-h-[1.4em] text-[13px] leading-relaxed break-words sm:mb-3 sm:text-[16px]"
           >
             <span ref={textRef} className="text-[#6b7280]">
               {PLACEHOLDER}
@@ -744,11 +695,7 @@ export default function AskSavaDemo({
             <div className="flex min-w-0 items-center gap-1 sm:gap-2">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#e5e5e5] bg-white text-[#4b5563] sm:h-9 sm:w-9 sm:rounded-xl">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                    stroke="currentColor"
-                    strokeWidth="1.75"
-                  />
+                  <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" strokeWidth="1.75" />
                   <path
                     d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.998 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"
                     stroke="currentColor"
@@ -807,23 +754,13 @@ export default function AskSavaDemo({
         </div>
 
         {/* Waitlist replaces chat inside the same card */}
-        <div
-          ref={waitlistRef}
-          className="flex w-full flex-col items-stretch"
-          style={{ display: "none" }}
-        >
-          <div
-            ref={waitlistFormRef}
-            className="flex w-full flex-col items-stretch gap-4 sm:gap-5"
-          >
-            <div
-              ref={buildingRef}
-              className="inline-flex items-center gap-2 self-start sm:gap-2.5"
-            >
+        <div ref={waitlistRef} className="flex w-full flex-col items-stretch" style={{ display: "none" }}>
+          <div ref={waitlistFormRef} className="flex w-full flex-col items-stretch gap-4 sm:gap-5">
+            <div ref={buildingRef} className="inline-flex items-center gap-2 self-start sm:gap-2.5">
               <span className="status-sparkle inline-flex shrink-0">
                 <SparkleIcon />
               </span>
-              <span className="text-[14px] font-bold leading-snug tracking-[-0.01em] text-[#1a1a1a] sm:text-[16px]">
+              <span className="text-[14px] leading-snug font-bold tracking-[-0.01em] text-[#1a1a1a] sm:text-[16px]">
                 {BUILDING_LABEL}
               </span>
             </div>
@@ -833,10 +770,7 @@ export default function AskSavaDemo({
                 {WAITLIST_LINE}
               </p>
 
-              <form
-                onSubmit={onWaitlistSubmit}
-                className="flex w-full flex-col gap-2"
-              >
+              <form onSubmit={onWaitlistSubmit} className="flex w-full flex-col gap-2">
                 <div className="flex w-full items-center gap-2 rounded-2xl border border-[#e5e5e5] bg-[#faf9f6] p-1.5 sm:gap-2.5 sm:p-2">
                   <input
                     type="email"
@@ -864,9 +798,7 @@ export default function AskSavaDemo({
                     {waitlistLoading ? "Sending…" : "Send"}
                   </button>
                 </div>
-                {waitlistError ? (
-                  <p className="px-1 text-[12px] text-red-600 sm:text-[13px]">{waitlistError}</p>
-                ) : null}
+                {waitlistError ? <p className="px-1 text-[12px] text-red-600 sm:text-[13px]">{waitlistError}</p> : null}
               </form>
             </div>
           </div>
@@ -877,7 +809,7 @@ export default function AskSavaDemo({
             style={{ display: "none" }}
           >
             <DoubleTickIcon />
-            <p className="text-[13px] font-medium leading-snug tracking-[-0.01em] text-[#1a1a1a] sm:text-[15px]">
+            <p className="text-[13px] leading-snug font-medium tracking-[-0.01em] text-[#1a1a1a] sm:text-[15px]">
               {SUCCESS_MESSAGE}
             </p>
           </div>
@@ -885,7 +817,7 @@ export default function AskSavaDemo({
 
         <div
           ref={handRef}
-          className="pointer-events-none absolute z-20 isolate scale-75 sm:scale-100"
+          className="pointer-events-none absolute isolate z-20 scale-75 sm:scale-100"
           style={{ opacity: 0 }}
         >
           <Image
@@ -900,11 +832,7 @@ export default function AskSavaDemo({
         </div>
       </div>
 
-      <DynamicIsland
-        showSkip={showSkip}
-        onSkip={() => skipHandlerRef.current()}
-        onReload={() => onRequestReload?.()}
-      />
+      <DynamicIsland showSkip={showSkip} onSkip={() => skipHandlerRef.current()} onReload={() => onRequestReload?.()} />
     </div>
   );
 }

@@ -99,6 +99,8 @@ export interface Category extends CategoryRef {
 
 export interface CartLine {
   productId: string;
+  /** The Zcom variant id (the line's identity together with productId) */
+  variantId?: string | null;
   name: string;
   qty: number;
   price: number;

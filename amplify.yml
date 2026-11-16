@@ -1,0 +1,25 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # The Zcom kit is a private GitHub repo: fetch it over HTTPS with the shared read-only GITHUB_TOKEN
+        # (an Amplify environment variable; it is never written to a file)
+        - git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "ssh://git@github.com/"
+        - git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "git@github.com:" --add
+        - git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/" --add
+        - npm ci
+    build:
+      commands:
+        # Amplify gives environment variables to the build only, not to the Next server at run time, so the
+        # store's variables are written to .env.production for the server (GITHUB_TOKEN is not)
+        - env | grep -E '^(API_GATEWAY_URL|EDGE_SHARED_SECRET|ZCOM_STORE_SLUG|NEXT_PUBLIC_TENANT_DOMAIN|NEXT_PUBLIC_SITE_URL|ZCOM_TRUSTED_IP_HEADER|ZCOM_TRUST_FORWARDED_FOR)=' >> .env.production || true
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*

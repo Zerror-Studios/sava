@@ -1,10 +1,10 @@
 "use client";
 
 import { useApolloClient } from "@apollo/client/react";
+import { GetProductDocument } from "@zcom/storefront-kit/graphql";
 import { useState } from "react";
-import { GET_PRODUCT } from "@/graphql";
 import { useCart } from "@/hooks/useCart";
-import { isApiConfigured } from "@/lib/env";
+import { toProduct } from "@/lib/zcom/adapters";
 import { useCartStore } from "@/store/cart-store";
 import { toast } from "@/store/toast-store";
 import { findVariant, isOutOfStock, toVariantDetail } from "@/utils/product";
@@ -19,7 +19,7 @@ interface QuickAddItem {
 
 /**
  * Adds a listed product's variant to the bag and opens it (listing card, empty-bag suggestions).
- * Listings don't carry full variant detail, so it fetches the product first.
+ * It reads the product first, so the stock and variant are current.
  */
 export function useQuickAdd() {
   const client = useApolloClient();
@@ -28,15 +28,11 @@ export function useQuickAdd() {
   const [loading, setLoading] = useState(false);
 
   const add = async ({ slug, productId, categoryId, selectedOptions }: QuickAddItem) => {
-    // Demo catalogue: there's no cart to add to — useCart explains that
-    if (!isApiConfigured) {
-      await addItem({ productId, categoryId, variant: { selectedOptions, variantPrice: 0 } });
-      return;
-    }
     setLoading(true);
     try {
-      const { data } = await client.query({ query: GET_PRODUCT, variables: { slug } });
-      const variants = data?.getClientSideProductById?.variants ?? [];
+      const { data } = await client.query({ query: GetProductDocument, variables: { slug } });
+      const product = data?.getClientSideProductById ? toProduct(data.getClientSideProductById) : null;
+      const variants = product?.variants ?? [];
       const variant = selectedOptions.length ? findVariant(variants, selectedOptions) : variants[0];
       if (!variant) {
         toast.info("That one isn't available right now.");

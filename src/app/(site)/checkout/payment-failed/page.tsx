@@ -11,7 +11,7 @@ export const metadata: Metadata = createMetadata({
   noIndex: true,
 });
 
-// z-commerce redirects here when Nimbbl reports a failed or cancelled payment
+// /checkout/payment-return sends shoppers here when the payment failed or was cancelled
 export default function PaymentFailedPage() {
   return (
     <Frame className="py-section">

@@ -1,35 +1,34 @@
 "use client";
 
-import { useMutation } from "@apollo/client/react";
 import { RiCheckLine } from "@remixicon/react";
+import { useContactForm } from "@zcom/storefront-kit/client";
+import { getErrorMessage } from "@zcom/storefront-kit/core";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { TextArea, TextField, formValues } from "@/components/ui/form";
-import { CREATE_CONTACT } from "@/graphql";
-import { isApiConfigured } from "@/lib/env";
 import { toast } from "@/store/toast-store";
-import { errorMessage } from "@/utils/errors";
+import { zcomConfig } from "@/zcom.config";
 
 export default function ContactForm() {
-  const [createContact, { loading }] = useMutation(CREATE_CONTACT);
+  const contact = useContactForm();
+  const loading = contact.state === "sending";
   const [sent, setSent] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
-    if (!isApiConfigured) {
-      toast.info("Demo mode — connect z-commerce in .env.local to send messages.");
-      return;
-    }
     const { name, email, phoneNumber, subject, message } = formValues(form);
-    try {
-      await createContact({
-        variables: { input: { name, email, phoneNumber: phoneNumber || undefined, subject, message } },
-      });
+    // The Zcom contact form keeps the message in the store's inbox (the phone is optional here)
+    const ok = await contact.submit({ name, email, phoneNumber: phoneNumber || "", subject, message });
+    if (ok) {
       form.reset();
       setSent(true);
-    } catch (error) {
-      toast.error(errorMessage(error, "Your message didn't send. Please try again."));
+    } else {
+      toast.error(
+        contact.error
+          ? getErrorMessage({ graphQLErrors: [{ extensions: { reason: contact.error } }] }, zcomConfig.errorMessages)
+          : "Your message didn't send. Please try again.",
+      );
     }
   }
 

@@ -9,6 +9,12 @@ export const shopFilterGroups: { title: string; options: string[] }[] = [
 ];
 
 /*
+ * The home page's three bestsellers, by product slug, in order: the middle one is the featured card the
+ * travelling 3D stick lands on. A slug the store doesn't have is skipped (the newest products fill in).
+ */
+export const homeBestsellers = ["sava-kinetic", "sava-balanced", "sava-renewed"];
+
+/*
  * The product page's pickers, by z-commerce option name: the size option shows as pills beside the
  * name, the pack option as priced cards with a tier label over each. Any other option gets pills.
  */

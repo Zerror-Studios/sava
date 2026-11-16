@@ -1,17 +1,27 @@
 "use client";
 
-import { useQuery } from "@apollo/client/react";
 import { RiCheckLine, RiMailSendLine, RiTruckLine, RiUser3Line } from "@remixicon/react";
+import { useOrder, useOrderConfirmation, useProductsByIds } from "@zcom/storefront-kit/client";
 import Image from "next/image";
+import { useMemo } from "react";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import BlobButton from "@/components/ui/BlobButton";
 import { ButtonLink } from "@/components/ui/Button";
 import { Frame, FrameRule } from "@/components/ui/Frame";
 import Skeleton from "@/components/ui/Skeleton";
 import Sparkle from "@/components/ui/Sparkle";
-import { GET_ORDER_PAYMENT } from "@/graphql";
-import { isApiConfigured } from "@/lib/env";
-import type { Address } from "@/types";
+import { toAddress, toAsset } from "@/lib/zcom/adapters";
+import type { Address, CartLine } from "@/types";
+
+/** The band's kicker and line for each payment state (useOrderConfirmation) */
+const statusCopy = {
+  checking: { kicker: "Confirming your payment", line: "We're confirming your payment — this takes a moment." },
+  paid: { kicker: "Payment successful", line: "Your order is confirmed — we've emailed your receipt and details." },
+  unconfirmed: {
+    kicker: "Payment being confirmed",
+    line: "We haven't had the payment confirmation yet. It can take a few minutes — we'll email you as soon as it's in.",
+  },
+} as const;
 
 const nextSteps = [
   { Icon: RiMailSendLine, title: "Confirmation on its way", body: "We've emailed your receipt and order details." },
@@ -42,13 +52,61 @@ function AddressBlock({ title, address }: { title: string; address?: Address | n
   );
 }
 
-/** Thank-you page body. z-commerce redirects here with ?orderId= after a successful payment. */
+/**
+ * Thank-you page body (/checkout/thank-you?order=…). "Payment successful" only once the store says the
+ * order is PAID (useOrderConfirmation, which also sends the ads purchase); a signed-in shopper also
+ * sees the addresses and summary (useOrder).
+ */
 export default function OrderConfirmation({ orderId }: { orderId?: string }) {
-  const { data, loading } = useQuery(GET_ORDER_PAYMENT, {
-    variables: { id: orderId ?? "" },
-    skip: !orderId || !isApiConfigured,
-  });
-  const order = data?.getClientSidePaymentByOrderId?.order;
+  const { status } = useOrderConfirmation(orderId ?? null);
+  const { order: zcomOrder, loading } = useOrder(orderId);
+  const copy = statusCopy[status];
+
+  const productIds = useMemo(
+    () => (zcomOrder?.cart ?? []).map((line) => line?.productId).filter((id): id is string => Boolean(id)),
+    [zcomOrder],
+  );
+  const { products } = useProductsByIds(productIds);
+
+  const order = useMemo(() => {
+    if (!zcomOrder) return null;
+    const lines: CartLine[] = (zcomOrder.cart ?? []).flatMap((line) => {
+      if (!line) return [];
+      const product = products.find((p) => p._id === line.productId);
+      const variant = product?.variants?.find((v) => v?._id === line.variantId);
+      return [
+        {
+          productId: line.productId ?? "",
+          variantId: line.variantId ?? null,
+          // The product's name: the line's carries the choices too, which the summary shows on their own
+          name: product?.name ?? line.name ?? "",
+          qty: line.qty ?? 1,
+          price: line.price ?? 0,
+          finalPrice: line.finalPrice ?? line.price ?? 0,
+          asset: line.asset?.path ? toAsset(line.asset) : null,
+          variantDetail: {
+            variantDetailId: line.variantId ?? undefined,
+            selectedOptions: (variant?.optionValues ?? []).filter((v): v is string => Boolean(v)),
+            variantPrice: line.price ?? 0,
+          },
+        },
+      ];
+    });
+    const address = (a: typeof zcomOrder.shippingAddress) => (a ? toAddress({ _id: "", ...a }) : null);
+    return {
+      orderNo: zcomOrder.orderNo,
+      shippingAddress: address(zcomOrder.shippingAddress),
+      billingAddress: address(zcomOrder.billingAddress),
+      cart: lines,
+      totalprice: zcomOrder.totalprice ?? 0,
+      totalDiscount: zcomOrder.totalDiscount,
+      shippingAmount: zcomOrder.shippingAmount,
+      // Tax is inside the line prices (incl. of all taxes); the order carries no separate tax figure
+      taxAmount: null,
+      orderPrice: zcomOrder.orderPrice,
+      discountedPrice: zcomOrder.discountedPrice,
+    };
+  }, [zcomOrder, products]);
 
   return (
     <>
@@ -64,15 +122,15 @@ export default function OrderConfirmation({ orderId }: { orderId?: string }) {
             </span>
             <p className="flex items-center gap-2 text-kicker text-mint">
               <Sparkle />
-              Payment successful
+              {copy.kicker}
             </p>
             <h1 data-heading-effect id="order-confirmed" className="max-w-3xl">
               Thank you for your order
             </h1>
             <p data-reveal className="max-w-xl text-body-lg text-paper/80">
-              {order
+              {status === "paid" && order?.orderNo
                 ? `Order ${order.orderNo} is confirmed — we've emailed your receipt.`
-                : "Your order is confirmed — we've emailed your receipt and details."}
+                : copy.line}
             </p>
             <div data-reveal className="mt-2 flex flex-wrap items-center justify-center gap-3">
               <BlobButton href="/shop" tone="light">

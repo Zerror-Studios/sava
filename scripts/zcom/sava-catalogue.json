@@ -1,0 +1,439 @@
+{
+  "categories": [
+    {
+      "slug": "sticks",
+      "name": "Antiperspirant Sticks",
+      "description": "SAVA antiperspirant sticks: clinical sweat control with refined, long-lasting fragrance."
+    }
+  ],
+  "products": [
+    {
+      "slug": "sava-kinetic",
+      "name": "Sava Kinetic",
+      "category": "sticks",
+      "skuPrefix": "SAVA-KINETIC",
+      "description": "Sava Kinetic is built on one promise: to keep up with you. Its dual-action formula controls sweat and neutralises odour where they start, while Silver Lining — bright citrus peel and cool mineral notes over a clean musk — unfolds slowly through the day. It glides on clear and stays comfortable from the first commute to the last rep.",
+      "options": [
+        {
+          "name": "Size",
+          "values": ["100ml", "50ml"]
+        },
+        {
+          "name": "Pack",
+          "values": ["Pack of 01", "Pack of 02", "Pack of 04"]
+        }
+      ],
+      "variants": [
+        {
+          "values": ["100ml", "Pack of 01"],
+          "price": 335
+        },
+        {
+          "values": ["100ml", "Pack of 02"],
+          "price": 550
+        },
+        {
+          "values": ["100ml", "Pack of 04"],
+          "price": 850
+        },
+        {
+          "values": ["50ml", "Pack of 01"],
+          "price": 225
+        },
+        {
+          "values": ["50ml", "Pack of 02"],
+          "price": 399
+        },
+        {
+          "values": ["50ml", "Pack of 04"],
+          "price": 699
+        }
+      ],
+      "additionalInfo": [
+        {
+          "title": "Benefits",
+          "description": "Advanced sweat control with a crisp, energising scent, made for days that don't slow down."
+        },
+        {
+          "title": "Key Ingredients",
+          "description": "A sweat-control complex with skin-conditioning botanical oils and time-release fragrance micro-capsules. Free from paraben preservatives, denatured alcohols and artificial dyes."
+        },
+        {
+          "title": "Aroma",
+          "description": "Silver Lining: bright citrus peel and cool mineral notes over a clean musk."
+        }
+      ],
+      "images": [
+        {
+          "path": "/images/products/kinetic/sava-kinetic-front.jpg",
+          "alt": "Sava Kinetic antiperspirant stick, front",
+          "featured": true,
+          "hover": false
+        },
+        {
+          "featured": false,
+          "hover": true,
+          "path": "/images/products/shared/sava-lifestyle-holding.png",
+          "alt": "A smiling woman holding a SAVA stick, captioned “SAVA underarm care”"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-very-local.png",
+          "alt": "A woman with her arm raised after a workout, captioned “Your antiperspirant is actually very local”"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-sweat-ducts.png",
+          "alt": "Cross-section of skin: SAVA works inside the sweat ducts where you apply it"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-less-sweat.png",
+          "alt": "Close-up of an underarm, captioned “Less sweat reaches the skin”"
+        },
+        {
+          "path": "/images/products/kinetic/sava-kinetic-angle.jpg",
+          "alt": "Sava Kinetic antiperspirant stick, three-quarter view",
+          "featured": false,
+          "hover": false
+        },
+        {
+          "path": "/images/products/kinetic/sava-kinetic-back.jpg",
+          "alt": "Sava Kinetic antiperspirant stick, back, with the directions for use",
+          "featured": false,
+          "hover": false
+        },
+        {
+          "path": "/images/products/kinetic/sava-kinetic-base.jpg",
+          "alt": "Sava Kinetic antiperspirant stick, lying down, showing the twist-up dial",
+          "featured": false,
+          "hover": false
+        }
+      ]
+    },
+    {
+      "slug": "sava-balanced",
+      "name": "Sava Balanced",
+      "category": "sticks",
+      "skuPrefix": "SAVA-BALANCED",
+      "description": "Sava Balanced is built on one promise: to keep up with you. Its dual-action formula controls sweat and neutralises odour where they start, while Citrus Tide — sparkling bergamot and grapefruit over a soft sea-salt accord — unfolds slowly through the day. It glides on clear and stays comfortable from the first commute to the last rep.",
+      "options": [
+        {
+          "name": "Size",
+          "values": ["100ml", "50ml"]
+        },
+        {
+          "name": "Pack",
+          "values": ["Pack of 01", "Pack of 02", "Pack of 04"]
+        }
+      ],
+      "variants": [
+        {
+          "values": ["100ml", "Pack of 01"],
+          "price": 335
+        },
+        {
+          "values": ["100ml", "Pack of 02"],
+          "price": 550
+        },
+        {
+          "values": ["100ml", "Pack of 04"],
+          "price": 850
+        },
+        {
+          "values": ["50ml", "Pack of 01"],
+          "price": 225
+        },
+        {
+          "values": ["50ml", "Pack of 02"],
+          "price": 399
+        },
+        {
+          "values": ["50ml", "Pack of 04"],
+          "price": 699
+        }
+      ],
+      "additionalInfo": [
+        {
+          "title": "Benefits",
+          "description": "SAVA combines effective sweat control and refined fragrance for lasting freshness, comfort and everyday confidence."
+        },
+        {
+          "title": "Key Ingredients",
+          "description": "A sweat-control complex with skin-conditioning botanical oils and time-release fragrance micro-capsules. Free from paraben preservatives, denatured alcohols and artificial dyes."
+        },
+        {
+          "title": "Aroma",
+          "description": "Citrus Tide: sparkling bergamot and grapefruit over a soft sea-salt accord."
+        }
+      ],
+      "images": [
+        {
+          "path": "/images/products/balanced/sava-balanced-front.jpg",
+          "alt": "Sava Balanced antiperspirant stick, front",
+          "featured": true,
+          "hover": false
+        },
+        {
+          "featured": false,
+          "hover": true,
+          "path": "/images/products/shared/sava-lifestyle-holding.png",
+          "alt": "A smiling woman holding a SAVA stick, captioned “SAVA underarm care”"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-very-local.png",
+          "alt": "A woman with her arm raised after a workout, captioned “Your antiperspirant is actually very local”"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-sweat-ducts.png",
+          "alt": "Cross-section of skin: SAVA works inside the sweat ducts where you apply it"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-less-sweat.png",
+          "alt": "Close-up of an underarm, captioned “Less sweat reaches the skin”"
+        },
+        {
+          "path": "/images/products/balanced/sava-balanced-angle.jpg",
+          "alt": "Sava Balanced antiperspirant stick, three-quarter view",
+          "featured": false,
+          "hover": false
+        },
+        {
+          "path": "/images/products/balanced/sava-balanced-back.jpg",
+          "alt": "Sava Balanced antiperspirant stick, back, with the directions for use",
+          "featured": false,
+          "hover": false
+        },
+        {
+          "path": "/images/products/balanced/sava-balanced-base.jpg",
+          "alt": "Sava Balanced antiperspirant stick, lying down, showing the twist-up dial",
+          "featured": false,
+          "hover": false
+        }
+      ]
+    },
+    {
+      "slug": "sava-renewed",
+      "name": "Sava Renewed",
+      "category": "sticks",
+      "skuPrefix": "SAVA-RENEWED",
+      "description": "Sava Renewed is built on one promise: to keep up with you. Its dual-action formula controls sweat and neutralises odour where they start, while Forest Air — green fig leaf, crushed pine needles and vetiver — unfolds slowly through the day. It glides on clear and stays comfortable from the first commute to the last rep.",
+      "options": [
+        {
+          "name": "Size",
+          "values": ["100ml", "50ml"]
+        },
+        {
+          "name": "Pack",
+          "values": ["Pack of 01", "Pack of 02", "Pack of 04"]
+        }
+      ],
+      "variants": [
+        {
+          "values": ["100ml", "Pack of 01"],
+          "price": 335
+        },
+        {
+          "values": ["100ml", "Pack of 02"],
+          "price": 550
+        },
+        {
+          "values": ["100ml", "Pack of 04"],
+          "price": 850
+        },
+        {
+          "values": ["50ml", "Pack of 01"],
+          "price": 225
+        },
+        {
+          "values": ["50ml", "Pack of 02"],
+          "price": 399
+        },
+        {
+          "values": ["50ml", "Pack of 04"],
+          "price": 699
+        }
+      ],
+      "additionalInfo": [
+        {
+          "title": "Benefits",
+          "description": "Dual-action sweat and odour defence with a fresh, green scent that keeps you feeling reset all day."
+        },
+        {
+          "title": "Key Ingredients",
+          "description": "A sweat-control complex with skin-conditioning botanical oils and time-release fragrance micro-capsules. Free from paraben preservatives, denatured alcohols and artificial dyes."
+        },
+        {
+          "title": "Aroma",
+          "description": "Forest Air: green fig leaf, crushed pine needles and vetiver."
+        }
+      ],
+      "images": [
+        {
+          "path": "/images/products/renewed/sava-renewed-front.jpg",
+          "alt": "Sava Renewed antiperspirant stick, front",
+          "featured": true,
+          "hover": false
+        },
+        {
+          "featured": false,
+          "hover": true,
+          "path": "/images/products/shared/sava-lifestyle-holding.png",
+          "alt": "A smiling woman holding a SAVA stick, captioned “SAVA underarm care”"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-very-local.png",
+          "alt": "A woman with her arm raised after a workout, captioned “Your antiperspirant is actually very local”"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-sweat-ducts.png",
+          "alt": "Cross-section of skin: SAVA works inside the sweat ducts where you apply it"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-less-sweat.png",
+          "alt": "Close-up of an underarm, captioned “Less sweat reaches the skin”"
+        },
+        {
+          "path": "/images/products/renewed/sava-renewed-angle.jpg",
+          "alt": "Sava Renewed antiperspirant stick, three-quarter view",
+          "featured": false,
+          "hover": false
+        },
+        {
+          "path": "/images/products/renewed/sava-renewed-back.jpg",
+          "alt": "Sava Renewed antiperspirant stick, back, with the directions for use",
+          "featured": false,
+          "hover": false
+        },
+        {
+          "path": "/images/products/renewed/sava-renewed-base.jpg",
+          "alt": "Sava Renewed antiperspirant stick, lying down, showing the twist-up dial",
+          "featured": false,
+          "hover": false
+        }
+      ]
+    },
+    {
+      "slug": "sava-grounded",
+      "name": "Sava Grounded",
+      "category": "sticks",
+      "skuPrefix": "SAVA-GROUNDED",
+      "description": "Sava Grounded is built on one promise: to keep up with you. Its dual-action formula controls sweat and neutralises odour where they start, while Amber Wood — warm amber, cedarwood and a hint of spice on a smooth woody base — unfolds slowly through the day. It glides on clear and stays comfortable from the first commute to the last rep.",
+      "options": [
+        {
+          "name": "Size",
+          "values": ["100ml", "50ml"]
+        },
+        {
+          "name": "Pack",
+          "values": ["Pack of 01", "Pack of 02", "Pack of 04"]
+        }
+      ],
+      "variants": [
+        {
+          "values": ["100ml", "Pack of 01"],
+          "price": 335
+        },
+        {
+          "values": ["100ml", "Pack of 02"],
+          "price": 550
+        },
+        {
+          "values": ["100ml", "Pack of 04"],
+          "price": 850
+        },
+        {
+          "values": ["50ml", "Pack of 01"],
+          "price": 225
+        },
+        {
+          "values": ["50ml", "Pack of 02"],
+          "price": 399
+        },
+        {
+          "values": ["50ml", "Pack of 04"],
+          "price": 699
+        }
+      ],
+      "additionalInfo": [
+        {
+          "title": "Benefits",
+          "description": "Long-lasting sweat control wrapped in a warm, woody fragrance that stays close and steady."
+        },
+        {
+          "title": "Key Ingredients",
+          "description": "A sweat-control complex with skin-conditioning botanical oils and time-release fragrance micro-capsules. Free from paraben preservatives, denatured alcohols and artificial dyes."
+        },
+        {
+          "title": "Aroma",
+          "description": "Amber Wood: warm amber, cedarwood and a hint of spice on a smooth woody base."
+        }
+      ],
+      "images": [
+        {
+          "path": "/images/products/grounded/sava-grounded-front.jpg",
+          "alt": "Sava Grounded antiperspirant stick, front",
+          "featured": true,
+          "hover": false
+        },
+        {
+          "featured": false,
+          "hover": true,
+          "path": "/images/products/shared/sava-lifestyle-holding.png",
+          "alt": "A smiling woman holding a SAVA stick, captioned “SAVA underarm care”"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-very-local.png",
+          "alt": "A woman with her arm raised after a workout, captioned “Your antiperspirant is actually very local”"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-sweat-ducts.png",
+          "alt": "Cross-section of skin: SAVA works inside the sweat ducts where you apply it"
+        },
+        {
+          "featured": false,
+          "hover": false,
+          "path": "/images/products/shared/sava-less-sweat.png",
+          "alt": "Close-up of an underarm, captioned “Less sweat reaches the skin”"
+        },
+        {
+          "path": "/images/products/grounded/sava-grounded-angle.jpg",
+          "alt": "Sava Grounded antiperspirant stick, three-quarter view",
+          "featured": false,
+          "hover": false
+        },
+        {
+          "path": "/images/products/grounded/sava-grounded-back.jpg",
+          "alt": "Sava Grounded antiperspirant stick, back, with the directions for use",
+          "featured": false,
+          "hover": false
+        },
+        {
+          "path": "/images/products/grounded/sava-grounded-base.jpg",
+          "alt": "Sava Grounded antiperspirant stick, lying down, showing the twist-up dial",
+          "featured": false,
+          "hover": false
+        }
+      ]
+    }
+  ]
+}

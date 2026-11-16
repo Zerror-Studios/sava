@@ -13,6 +13,9 @@ import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata("/home");
 
+// Products and prices come from the Zcom store: re-read at most once a minute
+export const revalidate = 60;
+
 export default function HomePage() {
   return (
     <>

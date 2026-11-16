@@ -1,91 +1,111 @@
 "use client";
 
-import { useMutation, useQuery } from "@apollo/client/react";
-import { RiLockLine, RiPlugLine, RiShoppingBag3Line } from "@remixicon/react";
+import { RiLockLine, RiShoppingBag3Line } from "@remixicon/react";
+import { useAddresses, useAdsTracking, useCheckout, useStoreCheckoutOptions } from "@zcom/storefront-kit/client";
+import { getErrorMessage, orderStatusPath } from "@zcom/storefront-kit/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import AddressFields, { readAddress } from "@/components/checkout/AddressFields";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Checkbox, TextField, formValues } from "@/components/ui/form";
 import Skeleton from "@/components/ui/Skeleton";
-import { CHECKOUT, GET_ADDRESSES } from "@/graphql";
+import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
-import { isApiConfigured } from "@/lib/env";
-import { openNimbblCheckout } from "@/lib/payment";
-import { selectIsLoggedIn, useAuthStore } from "@/store/auth-store";
+import { toAddress } from "@/lib/zcom/adapters";
 import { toast } from "@/store/toast-store";
 import type { Address } from "@/types";
 import { cn } from "@/utils/cn";
 import { errorMessage } from "@/utils/errors";
+import { zcomConfig } from "@/zcom.config";
 
+/** Text for a checkout failure reason (OUT_OF_STOCK, SHIPPING_UNAVAILABLE, STORE_ORDERS_PAUSED…) */
+const reasonMessage = (reason: string | null | undefined) =>
+  getErrorMessage({ graphQLErrors: [{ extensions: { reason: reason ?? "UNKNOWN" } }] }, zcomConfig.errorMessages);
+
+/*
+ * Checkout through the Zcom kit: the details reserve the stock and fix the amount (useCheckout().start,
+ * or startGuest for a shopper who isn't signed in), then the store's payment app opens its own window
+ * (pay). A paid order goes to its status page; an unconfirmed one to the thank-you page.
+ */
 export default function CheckoutView() {
   const router = useRouter();
   const { cart, lines, loading, applyCoupon, removeCoupon } = useCart();
-  const user = useAuthStore((s) => s.user);
-  const isLoggedIn = useAuthStore(selectIsLoggedIn);
+  const { user, isLoggedIn } = useAuth();
+  const checkout = useCheckout();
+  const { allowsGuest } = useStoreCheckoutOptions();
+  const ads = useAdsTracking();
   const [sameBilling, setSameBilling] = useState(true);
   const [paying, setPaying] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
-  const [checkout] = useMutation(CHECKOUT);
 
-  const { data: addressData } = useQuery(GET_ADDRESSES, {
-    variables: { filters: { userId: user?._id }, limit: 20, sort: { primary: "DESC", createdAt: "DESC" } },
-    skip: !isLoggedIn || !user?._id,
-  });
-  const saved = addressData?.getAddressByFilters.data ?? [];
+  const { addresses } = useAddresses();
+  const saved = useMemo(() => addresses.map(toAddress), [addresses]);
   const chosen: Address | undefined = saved.find((a) => a._id === savedId) ?? saved.find((a) => a.primary) ?? saved[0];
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!cart) return;
+    if (!isLoggedIn && !allowsGuest) {
+      router.push("/login?next=/checkout");
+      return;
+    }
     const v = formValues(e.currentTarget);
-    const shippingAddress = { ...readAddress(v, "shipping"), email: v.email, primary: true };
-    const billingAddress = sameBilling
-      ? { ...shippingAddress, primary: false }
-      : { ...readAddress(v, "billing"), email: v.email, primary: false };
+    const shippingAddress = { ...readAddress(v, "shipping"), email: v.email };
+    const billingAddress = sameBilling ? null : { ...readAddress(v, "billing"), email: v.email };
+    const items = lines.map((line) => ({
+      productId: line.productId,
+      variantId: line.variantId ?? null,
+      qty: line.qty,
+    }));
 
     setPaying(true);
     try {
-      const { data } = await checkout({
-        variables: {
-          input: {
+      ads.trackBeginCheckout(
+        lines.map((line) => ({ id: line.variantId ?? line.productId, quantity: line.qty, price: line.price })),
+        cart.discountedPrice || cart.totalprice,
+      );
+      // 1. Reserve the stock and fix the amount
+      const session = isLoggedIn
+        ? await checkout.start({ cartId: cart._id, lines: items, email: v.email, shippingAddress, billingAddress })
+        : await checkout.startGuest({
             cartId: cart._id,
-            userData: {
+            lines: items,
+            contact: {
+              email: v.email,
+              phone: shippingAddress.phone,
               firstName: shippingAddress.firstname,
               lastName: shippingAddress.lastname,
-              email: v.email,
-              phoneNumber: shippingAddress.phone,
-              countryCode: shippingAddress.countryCode,
-              emailSubscribedStatus: v.newsletter ? "SUBSCRIBED" : user?.emailSubscribedStatus || "NEVER_SUBSCRIBED",
+              acceptsMarketing: Boolean(v.newsletter),
             },
             shippingAddress,
             billingAddress,
-          },
-        },
-      });
-      const token = data?.clientCheckout.nimbblData?.token;
-      if (!token) throw new Error("Payment couldn't be started.");
-      router.push(await openNimbblCheckout(token));
+          });
+      if (!session) {
+        toast.error(reasonMessage(checkout.error));
+        setPaying(false);
+        return;
+      }
+      // 2. Pay in the store's payment window
+      const result = await checkout.pay();
+      if (result.step === "paid" && result.statusToken) {
+        router.replace(orderStatusPath(result.statusToken) ?? `/checkout/thank-you?order=${result.orderId}`);
+      } else if (result.step === "paid" || result.step === "unconfirmed") {
+        router.replace(`/checkout/thank-you?order=${result.orderId}`);
+      } else if (result.step === "redirecting") {
+        // The browser is leaving for the payment page
+      } else if (result.step === "dismissed") {
+        toast.info("Payment window closed. Your order is saved: press Pay now to try again.");
+        setPaying(false);
+      } else {
+        toast.error(reasonMessage(result.reason));
+        setPaying(false);
+      }
     } catch (error) {
       toast.error(errorMessage(error, "Checkout failed. Please try again."));
       setPaying(false);
     }
-  }
-
-  if (!isApiConfigured) {
-    return (
-      <StatePanel
-        icon={<RiPlugLine className="size-6" />}
-        title="Checkout needs the store connection"
-        body="Add NEXT_PUBLIC_GRAPHQL_API_URL, NEXT_PUBLIC_BACKEND_ENDPOINT and NEXT_PUBLIC_DB_TOKEN to .env.local to take orders."
-      >
-        <ButtonLink href="/shop" variant="outline">
-          Back to shop
-        </ButtonLink>
-      </StatePanel>
-    );
   }
 
   if (loading) {
@@ -109,7 +129,9 @@ export default function CheckoutView() {
     );
   }
 
-  const total = cart.discountedPrice || cart.totalprice;
+  // Once reserved, the summary shows the amount charged (with shipping); until then the bag's estimate
+  const pricing = checkout.pricing;
+  const total = pricing?.total ?? (cart.discountedPrice || cart.totalprice);
 
   return (
     // A task flow, so just one rise each for the steps and the summary
@@ -178,9 +200,10 @@ export default function CheckoutView() {
       <div className="flex flex-col gap-4 lg:sticky lg:top-[calc(var(--spacing-header)+1.5rem)]">
         <OrderSummary
           lines={lines}
-          subtotal={cart.totalprice}
-          discount={cart.totalDiscount}
-          tax={cart.totalTax}
+          subtotal={pricing?.subtotal ?? cart.totalprice}
+          discount={pricing?.discount ?? cart.totalDiscount}
+          shipping={pricing?.shipping}
+          tax={pricing?.tax ?? cart.totalTax}
           total={total}
           coupon={{ code: cart.coupon?.couponCode, onApply: applyCoupon, onRemove: removeCoupon }}
         />
@@ -212,7 +235,7 @@ function PayButton({ paying, className }: { paying: boolean; className?: string 
         <RiLockLine aria-hidden="true" className="size-4" />
         Pay now
       </Button>
-      <p className="text-center text-caption text-muted">Payments are processed securely by Nimbbl.</p>
+      <p className="text-center text-caption text-muted">Payments are processed securely online.</p>
     </div>
   );
 }
