@@ -3,6 +3,10 @@ frontend:
   phases:
     preBuild:
       commands:
+        # Node 24: the kit's HTML sanitiser (isomorphic-dompurify → jsdom 31) needs Node 22.22+ / 24.15+
+        - nvm install 24
+        - nvm use 24
+        - node -v
         # The Zcom kit is a private GitHub repo: fetch it over HTTPS with the shared read-only GITHUB_TOKEN
         # (an Amplify environment variable; it is never written to a file)
         - git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "ssh://git@github.com/"
